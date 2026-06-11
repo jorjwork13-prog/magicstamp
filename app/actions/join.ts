@@ -2,7 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-type JoinState = { error?: string; success?: boolean; memberId?: string } | undefined
+type JoinState = { error?: string; success?: boolean; memberId?: string; memberName?: string } | undefined
 
 export async function joinAction(
   _state: JoinState,
