@@ -1,6 +1,6 @@
 'use server'
 
-import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { createClient } from '@supabase/supabase-js'
 
 type JoinState = { error?: string; success?: boolean; memberId?: string } | undefined
 
@@ -16,7 +16,10 @@ export async function joinAction(
     return { error: 'ყველა ველი სავალდებულოა' }
   }
 
-  const supabase = await createSupabaseServerClient()
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   const { data, error } = await supabase
     .from('members')
