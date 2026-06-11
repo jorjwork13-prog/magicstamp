@@ -31,5 +31,5 @@ export async function joinAction(
     return { error: 'დარეგისტრირება ვერ მოხერხდა' }
   }
 
-  return { success: true, memberId: data.id }
+  return { success: true, memberId: data.id, memberName: name }
 }
