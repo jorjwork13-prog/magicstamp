@@ -16,7 +16,13 @@ export default async function JoinPage({
     .eq('id', businessId)
     .single()
 
-  if (error) console.error('JOIN_PAGE_ERROR:', error.message, error.code)
+  if (error) {
+    console.error(
+      'JOIN_PAGE_ERROR:', error.message, error.code,
+      '| businessId =', businessId,
+      '| supabase URL =', process.env.NEXT_PUBLIC_SUPABASE_URL
+    )
+  }
 
   if (!business) notFound()
 
