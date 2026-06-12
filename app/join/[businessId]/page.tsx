@@ -10,14 +10,6 @@ export default async function JoinPage({
   const { businessId } = await params
   const supabase = await createSupabaseServerClient()
 
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'MISSING'
-  console.error('DEBUG_KEY:', key.slice(0, 12) + '...', '| len =', key.length)
-
-  const { count } = await supabase
-    .from('businesses')
-    .select('*', { count: 'exact', head: true })
-  console.error('DEBUG_COUNT:', count)
-
   const { data: business, error } = await supabase
     .from('businesses')
     .select('id, name, max_stamps')
