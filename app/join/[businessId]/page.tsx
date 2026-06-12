@@ -10,11 +10,13 @@ export default async function JoinPage({
   const { businessId } = await params
   const supabase = await createSupabaseServerClient()
 
-  const { data: business } = await supabase
+  const { data: business, error } = await supabase
     .from('businesses')
     .select('id, name, max_stamps')
     .eq('id', businessId)
     .single()
+
+  if (error) console.error('JOIN_PAGE_ERROR:', error.message, error.code)
 
   if (!business) notFound()
 
