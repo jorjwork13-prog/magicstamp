@@ -65,6 +65,12 @@ export default function QrScanner({
 
           setResult(updated ?? { name: member.name, stamp_count: newCount })
           setScanError(null)
+
+          fetch('/api/wallet/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ memberId: decoded, stampCount: newCount, maxStamps }),
+          })
         },
         () => {} // per-frame scan failures are normal — ignore
       ).catch(() => {
