@@ -18,6 +18,8 @@ export async function POST(req: NextRequest) {
   const objectId = `${CLASS_ID}.${memberId}`
 
   try {
+    const heroUri = `https://magicstamp.vercel.app/api/stamp-image?count=${stampCount}&max=${maxStamps}`
+
     await walletobjects.loyaltyobject.patch({
       resourceId: objectId,
       requestBody: {
@@ -32,6 +34,12 @@ export async function POST(req: NextRequest) {
             id: 'stamp_progress',
           },
         ],
+        heroImage: {
+          sourceUri: { uri: heroUri },
+          contentDescription: {
+            defaultValue: { language: 'en-US', value: `${stampCount} of ${maxStamps} stamps` },
+          },
+        },
       },
     })
   } catch (err: any) {
