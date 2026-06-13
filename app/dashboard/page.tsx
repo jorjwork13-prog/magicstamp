@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
+import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import QrScanner from './QrScanner'
 import MembersTable from './MembersTable'
@@ -61,6 +62,12 @@ export default async function DashboardPage() {
           <MembersTable members={members ?? []} maxStamps={business.max_stamps} />
         </section>
       </main>
+
+      <footer className="max-w-3xl mx-auto px-4 py-6 flex justify-center gap-4 text-xs text-gray-400 border-t border-gray-100">
+        <Link href="/privacy" className="hover:text-[#185FA5] transition">კონფიდენციალურობა</Link>
+        <span>·</span>
+        <Link href="/terms" className="hover:text-[#185FA5] transition">პირობები</Link>
+      </footer>
     </div>
   )
 }
