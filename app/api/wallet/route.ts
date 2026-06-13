@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
     state: 'ACTIVE',
     accountId: memberId,
     accountName: memberName,
+    barcode: { type: 'QR_CODE', value: memberId, alternateText: memberId },
     loyaltyPoints: {
       label: 'სტემპი',
       balance: { int: stampCount },
