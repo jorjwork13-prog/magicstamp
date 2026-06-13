@@ -28,6 +28,7 @@ export async function joinAction(
     .single()
 
   if (error || !data) {
+    console.error('JOIN_ACTION_ERROR:', error)
     return { error: 'დარეგისტრირება ვერ მოხერხდა' }
   }
 
