@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 
-type ScanResult = { name: string; stamp_count: number }
+type ScanResult = { name: string; stamp_count: number; rewarded?: boolean }
 
 export default function QrScanner({
   businessId,
@@ -51,8 +51,9 @@ export default function QrScanner({
             return
           }
 
-          // Increment stamp count
-          const newCount = member.stamp_count + 1
+          const rewarded = member.stamp_count >= maxStamps
+          const newCount = rewarded ? 0 : member.stamp_count + 1
+
           const { data: updated } = await supabase
             .from('members')
             .update({ stamp_count: newCount, last_visit: new Date().toISOString() })
@@ -63,7 +64,7 @@ export default function QrScanner({
 
           if (!mounted) return
 
-          setResult(updated ?? { name: member.name, stamp_count: newCount })
+          setResult({ ...(updated ?? { name: member.name, stamp_count: newCount }), rewarded })
           setScanError(null)
 
           fetch('/api/wallet/update', {
@@ -111,24 +112,43 @@ export default function QrScanner({
 
       {/* Success */}
       {result && (
-        <div className="w-full max-w-sm bg-green-50 border border-green-200 rounded-xl px-5 py-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center text-white font-bold shrink-0">
-            ✓
+        result.rewarded ? (
+          <div className="w-full max-w-sm bg-amber-50 border border-amber-300 rounded-xl px-5 py-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-amber-400 flex items-center justify-center text-white font-bold shrink-0 text-lg">
+              🎁
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-amber-800 truncate">{result.name}</p>
+              <p className="text-sm text-amber-700">ბარათი შევსებულია! 🎁 დაასაჩუქრეთ კლიენტი</p>
+            </div>
+            <button
+              onClick={dismiss}
+              className="text-amber-400 hover:text-amber-600 text-xl leading-none shrink-0"
+              aria-label="დახურვა"
+            >
+              ×
+            </button>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-green-800 truncate">{result.name}</p>
-            <p className="text-sm text-green-600">
-              {result.stamp_count} / {maxStamps} სტემპი
-            </p>
+        ) : (
+          <div className="w-full max-w-sm bg-green-50 border border-green-200 rounded-xl px-5 py-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center text-white font-bold shrink-0">
+              ✓
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-green-800 truncate">{result.name}</p>
+              <p className="text-sm text-green-600">
+                {result.stamp_count} / {maxStamps} სტემპი
+              </p>
+            </div>
+            <button
+              onClick={dismiss}
+              className="text-green-400 hover:text-green-600 text-xl leading-none shrink-0"
+              aria-label="დახურვა"
+            >
+              ×
+            </button>
           </div>
-          <button
-            onClick={dismiss}
-            className="text-green-400 hover:text-green-600 text-xl leading-none shrink-0"
-            aria-label="დახურვა"
-          >
-            ×
-          </button>
-        </div>
+        )
       )}
 
       {/* Member not found */}
