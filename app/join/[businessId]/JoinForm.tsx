@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useActionState } from 'react'
+import Link from 'next/link'
 import { QRCodeSVG } from 'qrcode.react'
 import { joinAction } from '@/app/actions/join'
 
@@ -18,7 +19,7 @@ export default function JoinForm({
 
   if (state?.success && state.memberId) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-10">
         <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center space-y-5">
           <div>
             <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-2xl mx-auto mb-3">
@@ -48,6 +49,7 @@ export default function JoinForm({
             maxStamps={maxStamps}
           />
         </div>
+        <LegalFooter />
       </div>
     )
   }
@@ -91,7 +93,18 @@ export default function JoinForm({
             </button>
           </form>
         </div>
+        <LegalFooter />
       </div>
+    </div>
+  )
+}
+
+function LegalFooter() {
+  return (
+    <div className="flex justify-center gap-4 text-xs text-gray-400 mt-6">
+      <Link href="/privacy" className="hover:text-[#185FA5] transition">კონფიდენციალურობა</Link>
+      <span>·</span>
+      <Link href="/terms" className="hover:text-[#185FA5] transition">პირობები</Link>
     </div>
   )
 }

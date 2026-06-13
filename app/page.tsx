@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 relative">
       <div className="text-center max-w-lg">
         <div className="text-5xl font-bold text-[#185FA5] mb-6 tracking-tight">
           MagicStamp
@@ -26,6 +26,11 @@ export default function HomePage() {
           </Link>
         </p>
       </div>
+      <footer className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 text-xs text-gray-400">
+        <Link href="/privacy" className="hover:text-[#185FA5] transition">კონფიდენციალურობა</Link>
+        <span>·</span>
+        <Link href="/terms" className="hover:text-[#185FA5] transition">პირობები</Link>
+      </footer>
     </div>
   )
 }
