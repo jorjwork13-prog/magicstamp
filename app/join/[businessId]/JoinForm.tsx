@@ -5,6 +5,7 @@ import { useActionState } from 'react'
 import Link from 'next/link'
 import { QRCodeSVG } from 'qrcode.react'
 import { joinAction } from '@/app/actions/join'
+import StampGrid from '@/components/StampGrid'
 
 export default function JoinForm({
   businessId,
@@ -64,11 +65,7 @@ export default function JoinForm({
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
           <p className="text-xs text-gray-400 mb-4 uppercase tracking-widest">სტემპ-ბარათი</p>
-          <div className="grid grid-cols-5 gap-3 justify-items-center">
-            {Array.from({ length: maxStamps }).map((_, i) => (
-              <div key={i} className="w-11 h-11 rounded-full border-2 border-gray-200 bg-gray-50" />
-            ))}
-          </div>
+          <StampGrid count={0} max={maxStamps} />
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">

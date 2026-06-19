@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import sharp from 'sharp'
+import { computeRowLayout } from '@/lib/stamps'
 
 const WIDTH = 1032
 const HEIGHT = 336
@@ -14,37 +15,41 @@ export async function GET(req: NextRequest) {
   const count = Math.max(0, parseInt(searchParams.get('count') ?? '0', 10))
   const max = Math.max(1, parseInt(searchParams.get('max') ?? '10', 10))
 
-  const rows = max <= 5 ? 1 : 2
-  const cols = rows === 1 ? max : Math.ceil(max / 2)
+  const rowLayout = computeRowLayout(max)
+  const numRows = rowLayout.length
+  const maxCols = Math.max(...rowLayout)
 
   const padX = 60
   const padY = 40
   const usableW = WIDTH - padX * 2
   const usableH = HEIGHT - padY * 2
 
-  const diameter = Math.floor(Math.min(usableW / cols, usableH / rows) * 0.72)
+  const diameter = Math.floor(Math.min(usableW / maxCols, usableH / numRows) * 0.72)
   const radius = diameter / 2
-  const gapX = (usableW - cols * diameter) / (cols + 1)
-  const gapY = rows === 1 ? 0 : (usableH - rows * diameter) / (rows + 1)
+
+  const vertTotalGap = usableH - numRows * diameter
+  const gapY = vertTotalGap / (numRows + 1)
 
   const circles: string[] = []
+  let circleIndex = 0
 
-  for (let i = 0; i < max; i++) {
-    const row = rows === 1 ? 0 : Math.floor(i / cols)
-    const col = i % cols
+  for (let r = 0; r < numRows; r++) {
+    const n = rowLayout[r]
+    const horizTotalGap = usableW - n * diameter
+    const gapX = horizTotalGap / (n + 1)
+    const cy = padY + gapY * (r + 1) + diameter * r + radius
 
-    const cx = padX + gapX * (col + 1) + diameter * col + radius
-    const cy = rows === 1
-      ? HEIGHT / 2
-      : padY + gapY * (row + 1) + diameter * row + radius
+    for (let c = 0; c < n; c++) {
+      const cx = padX + gapX * (c + 1) + diameter * c + radius
+      const filled = circleIndex < count
+      circleIndex++
 
-    const filled = i < count
-
-    circles.push(
-      filled
-        ? `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${FILLED}" />`
-        : `<circle cx="${cx}" cy="${cy}" r="${radius - STROKE_WIDTH / 2}" fill="${EMPTY_FILL}" stroke="${EMPTY_STROKE}" stroke-width="${STROKE_WIDTH}" />`
-    )
+      circles.push(
+        filled
+          ? `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${FILLED}" />`
+          : `<circle cx="${cx}" cy="${cy}" r="${radius - STROKE_WIDTH / 2}" fill="${EMPTY_FILL}" stroke="${EMPTY_STROKE}" stroke-width="${STROKE_WIDTH}" />`
+      )
+    }
   }
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}">

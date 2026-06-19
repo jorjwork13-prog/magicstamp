@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import StampGrid from '@/components/StampGrid'
 
 type Member = {
   id: string
@@ -8,21 +9,6 @@ type Member = {
   phone: string
   stamp_count: number
   created_at: string
-}
-
-function StampDots({ count, max }: { count: number; max: number }) {
-  return (
-    <span className="flex flex-wrap gap-0.5">
-      {Array.from({ length: max }, (_, i) => (
-        <span
-          key={i}
-          className={`text-xs leading-none ${i < count ? 'text-[#185FA5]' : 'text-gray-200'}`}
-        >
-          ●
-        </span>
-      ))}
-    </span>
-  )
 }
 
 function formatDate(iso: string) {
@@ -103,7 +89,9 @@ export default function MembersTable({
                   </td>
                   <td className="py-3 px-1">
                     <div className="flex items-center gap-2">
-                      <StampDots count={member.stamp_count} max={maxStamps} />
+                      <div style={{ width: 'fit-content' }}>
+                        <StampGrid count={member.stamp_count} max={maxStamps} circleSize={10} gap={2} />
+                      </div>
                       <span className="text-xs text-gray-400 tabular-nums whitespace-nowrap">
                         {member.stamp_count}/{maxStamps}
                       </span>
