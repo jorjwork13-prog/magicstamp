@@ -90,7 +90,7 @@ export default function MembersTable({
                   <td className="py-3 px-1">
                     <div className="flex items-center gap-2">
                       <div style={{ width: 'fit-content' }}>
-                        <StampGrid count={member.stamp_count} max={maxStamps} circleSize={10} gap={2} />
+                        <StampGrid count={member.stamp_count} max={maxStamps} circleSize={10} gap={2} animateLastFilled />
                       </div>
                       <span className="text-xs text-gray-400 tabular-nums whitespace-nowrap">
                         {member.stamp_count}/{maxStamps}
