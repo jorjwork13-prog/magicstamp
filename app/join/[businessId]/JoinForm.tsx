@@ -77,12 +77,12 @@ export default function JoinForm({
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">სახელი</label>
               <input id="name" name="name" type="text" required placeholder="თქვენი სახელი"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition placeholder:text-gray-400" />
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition placeholder:text-gray-500" />
             </div>
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1.5">ტელეფონი</label>
               <input id="phone" name="phone" type="tel" required placeholder="555 00 00 00"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition placeholder:text-gray-400" />
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition placeholder:text-gray-500" />
             </div>
             {state?.error && (
               <p className="text-red-500 text-sm rounded-xl bg-red-50 px-4 py-3">{state.error}</p>

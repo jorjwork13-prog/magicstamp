@@ -18,7 +18,7 @@ export default function SettingsForm({ currentMaxStamps }: { currentMaxStamps: n
           id="max_stamps"
           name="max_stamps"
           defaultValue={currentMaxStamps}
-          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition bg-white"
+          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition bg-white"
         >
           {OPTIONS.map((n) => (
             <option key={n} value={n}>
