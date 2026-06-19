@@ -14,7 +14,7 @@ export default async function SettingsPage() {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('name, max_stamps')
+    .select('name, max_stamps, starting_stamps')
     .eq('email', user.email!)
     .single()
 
@@ -40,7 +40,10 @@ export default async function SettingsPage() {
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-base font-semibold text-gray-700 mb-5">სტემპ-ბარათის პარამეტრები</h2>
-          <SettingsForm currentMaxStamps={business.max_stamps} />
+          <SettingsForm
+            currentMaxStamps={business.max_stamps}
+            currentStartingStamps={business.starting_stamps ?? 0}
+          />
         </section>
       </main>
 

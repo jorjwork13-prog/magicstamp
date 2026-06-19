@@ -1,15 +1,23 @@
 'use client'
 
 import { useActionState } from 'react'
-import { updateMaxStampsAction } from '@/app/actions/settings'
+import { updateSettingsAction } from '@/app/actions/settings'
 
-const OPTIONS = [3, 4, 5, 6, 8, 10, 12, 15, 20]
+const MAX_OPTIONS     = [3, 4, 5, 6, 8, 10, 12, 15, 20]
+const STARTING_OPTIONS = [0, 1, 2, 3]
 
-export default function SettingsForm({ currentMaxStamps }: { currentMaxStamps: number }) {
-  const [state, formAction, pending] = useActionState(updateMaxStampsAction, undefined)
+export default function SettingsForm({
+  currentMaxStamps,
+  currentStartingStamps,
+}: {
+  currentMaxStamps: number
+  currentStartingStamps: number
+}) {
+  const [state, formAction, pending] = useActionState(updateSettingsAction, undefined)
 
   return (
     <form action={formAction} className="space-y-6">
+      {/* Max stamps */}
       <div>
         <label htmlFor="max_stamps" className="block text-sm font-medium text-gray-700 mb-2">
           სტემპების რაოდენობა
@@ -20,7 +28,7 @@ export default function SettingsForm({ currentMaxStamps }: { currentMaxStamps: n
           defaultValue={currentMaxStamps}
           className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition bg-white"
         >
-          {OPTIONS.map((n) => (
+          {MAX_OPTIONS.map((n) => (
             <option key={n} value={n}>
               {n} სტემპი
             </option>
@@ -31,10 +39,32 @@ export default function SettingsForm({ currentMaxStamps }: { currentMaxStamps: n
         </p>
       </div>
 
+      {/* Starting stamps */}
+      <div>
+        <label htmlFor="starting_stamps" className="block text-sm font-medium text-gray-700 mb-2">
+          წინასწარ შევსებული სტემპები ახალი კლიენტებისთვის
+        </label>
+        <select
+          id="starting_stamps"
+          name="starting_stamps"
+          defaultValue={currentStartingStamps}
+          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition bg-white"
+        >
+          {STARTING_OPTIONS.map((n) => (
+            <option key={n} value={n}>
+              {n === 0 ? '0 — გამორთულია' : `${n} სტემპი`}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-400 mt-2">
+          მხოლოდ ახლად რეგისტრირებულ კლიენტებს მიენიჭებათ ეს სტემპები.
+          უკვე არსებული კლიენტები არ შეიცვლებიან.
+        </p>
+      </div>
+
       {state?.error && (
         <p className="text-red-500 text-sm rounded-xl bg-red-50 px-4 py-3">{state.error}</p>
       )}
-
       {state?.success && (
         <p className="text-green-600 text-sm rounded-xl bg-green-50 px-4 py-3 font-medium">
           შენახულია ✓

@@ -11,12 +11,17 @@ export default function JoinForm({
   businessId,
   businessName,
   maxStamps,
+  startingStamps,
 }: {
   businessId: string
   businessName: string
   maxStamps: number
+  startingStamps: number
 }) {
   const [state, formAction, pending] = useActionState(joinAction, undefined)
+
+  // After successful registration, use the count the server actually saved
+  const earnedStamps = state?.startingStamps ?? 0
 
   if (state?.success && state.memberId) {
     return (
@@ -33,6 +38,13 @@ export default function JoinForm({
             </p>
           </div>
 
+          {/* Show pre-filled stamps on the success card if any were granted */}
+          {earnedStamps > 0 && (
+            <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-xl px-4 py-3 text-sm text-[#1E40AF] font-medium">
+              🎁 დაიწყე {earnedStamps} სტემპით!
+            </div>
+          )}
+
           <div className="border-t border-gray-100 pt-5 space-y-3">
             <p className="text-xs text-gray-400 uppercase tracking-widest">ჩემი QR კოდი</p>
             <div className="flex justify-center">
@@ -47,6 +59,7 @@ export default function JoinForm({
             memberId={state.memberId}
             memberName={state.memberName ?? ''}
             businessName={businessName}
+            stampCount={earnedStamps}
             maxStamps={maxStamps}
           />
         </div>
@@ -65,7 +78,13 @@ export default function JoinForm({
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
           <p className="text-xs text-gray-400 mb-4 uppercase tracking-widest">სტემპ-ბარათი</p>
-          <StampGrid count={0} max={maxStamps} />
+          {/* Show pre-filled circles so customers see the "head-start" before signing up */}
+          <StampGrid count={startingStamps} max={maxStamps} />
+          {startingStamps > 0 && (
+            <p className="text-xs text-[#185FA5] font-medium mt-3 text-center">
+              🎁 {startingStamps} სტემპი უკვე გელოდება!
+            </p>
+          )}
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -106,14 +125,15 @@ function LegalFooter() {
   )
 }
 
-function WalletButton({ memberId, memberName, businessName, maxStamps }: {
+function WalletButton({ memberId, memberName, businessName, stampCount, maxStamps }: {
   memberId: string
   memberName: string
   businessName: string
+  stampCount: number
   maxStamps: number
 }) {
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError]     = useState('')
 
   async function handleSave() {
     setLoading(true)
@@ -122,7 +142,7 @@ function WalletButton({ memberId, memberName, businessName, maxStamps }: {
       const res = await fetch('/api/wallet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ memberId, memberName, stampCount: 0, maxStamps, businessName }),
+        body: JSON.stringify({ memberId, memberName, stampCount, maxStamps, businessName }),
       })
       const data = await res.json()
       if (data.saveUrl) window.open(data.saveUrl, '_blank')
