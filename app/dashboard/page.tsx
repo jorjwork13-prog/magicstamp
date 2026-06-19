@@ -40,7 +40,12 @@ export default async function DashboardPage() {
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <span className="text-lg font-bold text-[#185FA5]">MagicStamp</span>
-          <span className="text-sm text-gray-500 truncate max-w-[180px]">{business.name}</span>
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard/settings" className="text-sm text-gray-400 hover:text-[#185FA5] transition">
+              პარამეტრები
+            </Link>
+            <span className="text-sm text-gray-500 truncate max-w-[180px]">{business.name}</span>
+          </div>
         </div>
       </header>
 
