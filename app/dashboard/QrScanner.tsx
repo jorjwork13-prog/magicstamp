@@ -108,12 +108,13 @@ export default function QrScanner({
             return
           }
 
-          const rewarded = member.stamp_count >= maxStamps
-          const newCount = rewarded ? 0 : member.stamp_count + 1
+          const newCount = member.stamp_count + 1
+          const rewarded = newCount >= maxStamps
+          const countToSave = rewarded ? 0 : newCount
 
           const { data: updated } = await supabase
             .from('members')
-            .update({ stamp_count: newCount, last_visit: new Date().toISOString() })
+            .update({ stamp_count: countToSave, last_visit: new Date().toISOString() })
             .eq('id', decoded)
             .eq('business_id', businessId)
             .select('name, stamp_count')
@@ -127,14 +128,14 @@ export default function QrScanner({
           await safeStop()
           if (!mounted) return
 
-          setResult({ ...(updated ?? { name: member.name, stamp_count: newCount }), rewarded })
+          setResult({ ...(updated ?? { name: member.name, stamp_count: countToSave }), rewarded })
           setMode('result')
           router.refresh()
 
           fetch('/api/wallet/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId: decoded, stampCount: newCount, maxStamps }),
+            body: JSON.stringify({ memberId: decoded, stampCount: countToSave, maxStamps }),
           })
         },
         () => {}
