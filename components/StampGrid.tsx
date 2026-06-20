@@ -2,12 +2,20 @@
 
 import { computeRowLayout } from '@/lib/stamps'
 
+function progressFillColor(count: number, max: number): string {
+  const pct = max > 0 ? count / max : 0
+  if (pct >= 0.75) return '#F59E0B'
+  if (pct >= 0.4)  return '#10B981'
+  return '#185FA5'
+}
+
 export default function StampGrid({
   count,
   max,
   circleSize = 44,
   gap = 10,
   animateLastFilled = false,
+  colorByProgress = false,
 }: {
   count: number
   max: number
@@ -17,7 +25,11 @@ export default function StampGrid({
    *  Keys include the filled state so the element remounts when a circle
    *  transitions empty→filled, re-triggering the animation on live-refresh. */
   animateLastFilled?: boolean
+  /** When true, all filled circles are colored by stamp percentage (blue→teal→amber).
+   *  Only pass from the dashboard member list — customer-facing views must omit this. */
+  colorByProgress?: boolean
 }) {
+  const fillColor = colorByProgress ? progressFillColor(count, max) : undefined
   const layout = computeRowLayout(max)
   let index = 0
 
@@ -52,11 +64,12 @@ export default function StampGrid({
                       height: circleSize,
                       flexShrink: 0,
                       borderRadius: '50%',
+                      backgroundColor: filled && fillColor ? fillColor : undefined,
                       animation: isNew
                         ? 'stamp-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) both'
                         : undefined,
                     }}
-                    className={filled ? 'bg-[#185FA5]' : 'border-2 border-gray-200 bg-gray-50'}
+                    className={filled ? (fillColor ? '' : 'bg-[#185FA5]') : 'border-2 border-gray-200 bg-gray-50'}
                   />
                 )
               })}

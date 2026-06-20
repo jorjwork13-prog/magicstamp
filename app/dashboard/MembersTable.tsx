@@ -11,12 +11,6 @@ type Member = {
   created_at: string
 }
 
-function progressColor(pct: number): string {
-  if (pct >= 0.75) return '#F59E0B'
-  if (pct >= 0.4)  return '#10B981'
-  return '#185FA5'
-}
-
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ka-GE', {
     year: 'numeric',
@@ -94,25 +88,13 @@ export default function MembersTable({
                     {member.phone}
                   </td>
                   <td className="py-3 px-1 min-w-[120px]">
-                    <div className="flex items-center gap-2 mb-1.5">
+                    <div className="flex items-center gap-2">
                       <div style={{ width: 'fit-content' }}>
-                        <StampGrid count={member.stamp_count} max={maxStamps} circleSize={10} gap={2} animateLastFilled />
+                        <StampGrid count={member.stamp_count} max={maxStamps} circleSize={10} gap={2} animateLastFilled colorByProgress />
                       </div>
                       <span className="text-xs text-gray-400 tabular-nums whitespace-nowrap">
                         {member.stamp_count}/{maxStamps}
                       </span>
-                    </div>
-                    {/* Progress bar */}
-                    <div style={{ height: 4, borderRadius: 9999, background: '#F3F4F6', overflow: 'hidden' }}>
-                      <div
-                        style={{
-                          height: '100%',
-                          width: `${Math.min(100, (member.stamp_count / maxStamps) * 100)}%`,
-                          borderRadius: 9999,
-                          background: progressColor(member.stamp_count / maxStamps),
-                          transition: 'width 0.4s ease, background-color 0.4s ease',
-                        }}
-                      />
                     </div>
                   </td>
                   <td className="py-3 px-1 text-gray-400 whitespace-nowrap">
