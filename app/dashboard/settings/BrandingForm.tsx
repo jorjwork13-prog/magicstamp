@@ -31,7 +31,7 @@ export default function BrandingForm({
       setUploading(true)
       const supabase = createSupabaseBrowserClient()
       const { data, error } = await supabase.storage
-        .from('logos')
+        .from('Logos')
         .upload(businessId, file, { upsert: true, contentType: file.type })
 
       if (error) {
@@ -40,7 +40,7 @@ export default function BrandingForm({
         return
       }
 
-      const { data: { publicUrl } } = supabase.storage.from('logos').getPublicUrl(data.path)
+      const { data: { publicUrl } } = supabase.storage.from('Logos').getPublicUrl(data.path)
       finalLogoUrl = publicUrl
       setLogoUrl(publicUrl)
       setUploading(false)
