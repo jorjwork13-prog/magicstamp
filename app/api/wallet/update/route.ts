@@ -15,12 +15,8 @@ export async function POST(req: NextRequest) {
   })
   const walletobjects = google.walletobjects({ version: 'v1', auth })
 
-  const validHex = (c: string | null | undefined) => (c && /^#[0-9A-Fa-f]{6}$/.test(c)) ? c : null
-  const bgParam  = validHex(brandColor)
-  const heroUri  = bgParam
-    ? `https://magicstamp.vercel.app/api/stamp-image?count=${stampCount}&max=${maxStamps}&bg=${encodeURIComponent(bgParam)}`
-    : `https://magicstamp.vercel.app/api/stamp-image?count=${stampCount}&max=${maxStamps}`
-
+  // heroImage lives on the class now (static branded banner), not on the object.
+  // Object patches only update the stamp count and progress text.
   const patchBody = {
     loyaltyPoints: {
       label:   'სტემპი',
@@ -33,12 +29,6 @@ export async function POST(req: NextRequest) {
         id:     'stamp_progress',
       },
     ],
-    heroImage: {
-      sourceUri: { uri: heroUri },
-      contentDescription: {
-        defaultValue: { language: 'en-US', value: `${stampCount} of ${maxStamps} stamps` },
-      },
-    },
   }
 
   // Per-business object is the primary target; shared class is the fallback for

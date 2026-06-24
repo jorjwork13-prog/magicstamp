@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import sharp from 'sharp'
-import { computeRowLayout } from '@/lib/stamps'
 
-const WIDTH        = 1032
-const HEIGHT       = 336
-const STROKE_WIDTH = 6
+const WIDTH  = 1032
+const HEIGHT = 336
 
-// ── Contrast helpers ───────────────────────────────────────────────────────
+// ── Contrast helpers (WCAG relative luminance) ─────────────────────────────
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const clean = hex.startsWith('#') ? hex.slice(1) : hex
@@ -27,74 +25,74 @@ function relativeLuminance(r: number, g: number, b: number): number {
   return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b)
 }
 
-type Colors = { filled: string; emptyFill: string; emptyStroke: string; background: string }
-
-function resolveColors(bgParam: string | null): Colors {
+function resolveColors(bgParam: string | null): { bgHex: string; iconColor: string } {
   if (bgParam) {
     const rgb = hexToRgb(bgParam)
     if (rgb) {
-      const lum   = relativeLuminance(rgb.r, rgb.g, rgb.b)
-      const bgHex = bgParam.startsWith('#') ? bgParam : `#${bgParam}`
-      return lum > 0.4
-        // Light card (yellow, white…) → dark circles
-        ? { filled: '#1A1A1A', emptyFill: 'none', emptyStroke: '#555555', background: bgHex }
-        // Dark card (blue, black…) → light circles
-        : { filled: '#FFFFFF', emptyFill: 'none', emptyStroke: '#888888', background: bgHex }
+      const bgHex    = bgParam.startsWith('#') ? bgParam : `#${bgParam}`
+      const iconColor = relativeLuminance(rgb.r, rgb.g, rgb.b) > 0.4 ? '#1A1A1A' : '#FFFFFF'
+      return { bgHex, iconColor }
     }
   }
-  // No bg param or invalid → existing blue-on-white fallback
-  return { filled: '#185FA5', emptyFill: '#F9FAFB', emptyStroke: '#D1D5DB', background: '#FFFFFF' }
+  return { bgHex: '#185FA5', iconColor: '#FFFFFF' }
+}
+
+function escapeXml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+           .replace(/"/g, '&quot;').replace(/'/g, '&apos;')
 }
 
 // ── Route ──────────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
-  const count  = Math.max(0, parseInt(searchParams.get('count') ?? '0',  10))
-  const max    = Math.max(1, parseInt(searchParams.get('max')   ?? '10', 10))
-  const bgParam = searchParams.get('bg')
+  const bgParam   = searchParams.get('bg')
+  const rawName   = searchParams.get('name') ?? ''
+  // Truncate long names so they don't overflow the banner
+  const displayName = rawName.length > 22 ? rawName.slice(0, 20) + '…' : rawName || 'LOYALTY'
 
-  const { filled, emptyFill, emptyStroke, background } = resolveColors(bgParam)
+  const { bgHex, iconColor } = resolveColors(bgParam)
 
-  const rowLayout = computeRowLayout(max)
-  const numRows   = rowLayout.length
-  const maxCols   = Math.max(...rowLayout)
+  // 5 decorative circles, evenly spaced, centered across the full width
+  // Centers: 156, 336, 516, 696, 876  (symmetric padding = 112px each side)
+  const CIRCLE_CENTERS = [156, 336, 516, 696, 876]
+  const CY      = 222   // vertical center of circles — sits below the text block
+  const R_GLOW  = 60    // soft halo radius
+  const R_SOLID = 44    // filled circle radius
 
-  const padX    = 60
-  const padY    = 40
-  const usableW = WIDTH  - padX * 2
-  const usableH = HEIGHT - padY * 2
-
-  const diameter = Math.floor(Math.min(usableW / maxCols, usableH / numRows) * 0.72)
-  const radius   = diameter / 2
-
-  const vertTotalGap = usableH - numRows * diameter
-  const gapY         = vertTotalGap / (numRows + 1)
-
-  const circles: string[] = []
-  let circleIndex = 0
-
-  for (let r = 0; r < numRows; r++) {
-    const n    = rowLayout[r]
-    const gapX = (usableW - n * diameter) / (n + 1)
-    const cy   = padY + gapY * (r + 1) + diameter * r + radius
-
-    for (let c = 0; c < n; c++) {
-      const cx       = padX + gapX * (c + 1) + diameter * c + radius
-      const isFilled = circleIndex < count
-      circleIndex++
-
-      circles.push(
-        isFilled
-          ? `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${filled}" />`
-          : `<circle cx="${cx}" cy="${cy}" r="${radius - STROKE_WIDTH / 2}" fill="${emptyFill}" stroke="${emptyStroke}" stroke-width="${STROKE_WIDTH}" />`
-      )
-    }
-  }
+  const circles = CIRCLE_CENTERS.map(cx =>
+    `<circle cx="${cx}" cy="${CY}" r="${R_GLOW}"  fill="${iconColor}" fill-opacity="0.18"/>` +
+    `<circle cx="${cx}" cy="${CY}" r="${R_SOLID}" fill="${iconColor}"/>`
+  ).join('\n  ')
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}">
-  <rect width="${WIDTH}" height="${HEIGHT}" fill="${background}" />
-  ${circles.join('\n  ')}
+  <defs>
+    <linearGradient id="vgn" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+      <stop offset="0%"   stop-color="black" stop-opacity="0.22"/>
+      <stop offset="45%"  stop-color="black" stop-opacity="0"/>
+      <stop offset="55%"  stop-color="black" stop-opacity="0"/>
+      <stop offset="100%" stop-color="black" stop-opacity="0.22"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="${WIDTH}" height="${HEIGHT}" fill="${bgHex}"/>
+  <rect width="${WIDTH}" height="${HEIGHT}" fill="url(#vgn)"/>
+
+  <!-- Business name -->
+  <text x="64" y="80"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="34" font-weight="700"
+    fill="${iconColor}">${escapeXml(displayName)}</text>
+
+  <!-- "LOYALTY CARD" subtitle -->
+  <text x="66" y="110"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="13" letter-spacing="5"
+    fill="${iconColor}" fill-opacity="0.55">LOYALTY CARD</text>
+
+  <!-- Decorative stamp circles -->
+  ${circles}
 </svg>`
 
   const pngBuffer = await sharp(Buffer.from(svg)).png().toBuffer()
@@ -102,6 +100,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(new Uint8Array(pngBuffer), {
     headers: {
       'Content-Type':  'image/png',
+      // URL contains bg+name so different brands get different cache entries
       'Cache-Control': 'public, max-age=86400, immutable',
     },
   })
