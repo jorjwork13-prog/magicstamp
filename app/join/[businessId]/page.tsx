@@ -12,7 +12,7 @@ export default async function JoinPage({
 
   const { data: business, error } = await supabase
     .from('businesses')
-    .select('id, name, max_stamps, starting_stamps')
+    .select('id, name, max_stamps, starting_stamps, logo_url, brand_color')
     .eq('id', businessId)
     .single()
 
@@ -26,6 +26,8 @@ export default async function JoinPage({
       businessName={business.name}
       maxStamps={business.max_stamps}
       startingStamps={business.starting_stamps ?? 0}
+      logoUrl={business.logo_url ?? null}
+      brandColor={business.brand_color ?? null}
     />
   )
 }

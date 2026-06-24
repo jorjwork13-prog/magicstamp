@@ -3,7 +3,8 @@
 import { redirect } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 
-type SettingsState = { error?: string; success?: boolean } | undefined
+type SettingsState  = { error?: string; success?: boolean } | undefined
+type BrandingState  = { error?: string; success?: boolean } | undefined
 
 const VALID_MAX = [3, 4, 5, 6, 8, 10, 12, 15, 20]
 
@@ -37,5 +38,22 @@ export async function updateSettingsAction(
 
   if (error) return { error: error.message }
 
+  return { success: true }
+}
+
+export async function updateBrandingAction(
+  brandColor: string,
+  logoUrl: string | null,
+): Promise<BrandingState> {
+  const supabase = await createSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { error } = await supabase
+    .from('businesses')
+    .update({ brand_color: brandColor, logo_url: logoUrl })
+    .eq('email', user.email!)
+
+  if (error) return { error: error.message }
   return { success: true }
 }

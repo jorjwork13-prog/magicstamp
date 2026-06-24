@@ -16,6 +16,7 @@ export default function StampGrid({
   gap = 10,
   animateLastFilled = false,
   colorByProgress = false,
+  fillColor: fillColorProp,
 }: {
   count: number
   max: number
@@ -28,8 +29,11 @@ export default function StampGrid({
   /** When true, all filled circles are colored by stamp percentage (blue→teal→amber).
    *  Only pass from the dashboard member list — customer-facing views must omit this. */
   colorByProgress?: boolean
+  /** Solid fill color for all filled circles (e.g. a business brand color).
+   *  Takes precedence over colorByProgress. Customer-facing join page passes this. */
+  fillColor?: string
 }) {
-  const fillColor = colorByProgress ? progressFillColor(count, max) : undefined
+  const fillColor = fillColorProp ?? (colorByProgress ? progressFillColor(count, max) : undefined)
   const layout = computeRowLayout(max)
   let index = 0
 

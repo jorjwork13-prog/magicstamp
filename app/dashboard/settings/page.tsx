@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import SettingsForm from './SettingsForm'
+import BrandingForm from './BrandingForm'
 
 export default async function SettingsPage() {
   const supabase = await createSupabaseServerClient()
@@ -14,7 +15,7 @@ export default async function SettingsPage() {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('name, max_stamps, starting_stamps')
+    .select('id, name, max_stamps, starting_stamps, brand_color, logo_url')
     .eq('email', user.email!)
     .single()
 
@@ -43,6 +44,18 @@ export default async function SettingsPage() {
           <SettingsForm
             currentMaxStamps={business.max_stamps}
             currentStartingStamps={business.starting_stamps ?? 0}
+          />
+        </section>
+
+        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h2 className="text-base font-semibold text-gray-700 mb-1">ბრენდირება</h2>
+          <p className="text-xs text-gray-400 mb-5">
+            ლოგო და ფერი გამოჩნდება კლიენტის გაწევრიანების გვერდზე. დაშბორდი უცვლელი რჩება.
+          </p>
+          <BrandingForm
+            businessId={business.id}
+            currentBrandColor={business.brand_color ?? null}
+            currentLogoUrl={business.logo_url ?? null}
           />
         </section>
       </main>

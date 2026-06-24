@@ -12,13 +12,18 @@ export default function JoinForm({
   businessName,
   maxStamps,
   startingStamps,
+  logoUrl,
+  brandColor,
 }: {
   businessId: string
   businessName: string
   maxStamps: number
   startingStamps: number
+  logoUrl?: string | null
+  brandColor?: string | null
 }) {
   const [state, formAction, pending] = useActionState(joinAction, undefined)
+  const accent = brandColor ?? '#185FA5'
 
   // After successful registration, use the count the server actually saved
   const earnedStamps = state?.startingStamps ?? 0
@@ -28,19 +33,24 @@ export default function JoinForm({
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-10">
         <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center space-y-5">
           <div>
-            <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-2xl mx-auto mb-3">
-              ✓
-            </div>
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={businessName} className="h-14 max-w-[160px] object-contain mx-auto mb-3" />
+            ) : (
+              <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-2xl mx-auto mb-3">
+                ✓
+              </div>
+            )}
             <h2 className="text-xl font-bold text-gray-800">გამარჯობა!</h2>
             <p className="text-gray-500 text-sm mt-1">
               შეუერთდით{' '}
-              <span className="font-semibold text-[#185FA5]">{businessName}</span>-ს
+              <span className="font-semibold" style={{ color: accent }}>{businessName}</span>-ს
             </p>
           </div>
 
           {/* Show pre-filled stamps on the success card if any were granted */}
           {earnedStamps > 0 && (
-            <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-xl px-4 py-3 text-sm text-[#1E40AF] font-medium">
+            <div className="rounded-xl px-4 py-3 text-sm font-medium" style={{ backgroundColor: `${accent}18`, color: accent }}>
               🎁 დაიწყე {earnedStamps} სტემპით!
             </div>
           )}
@@ -72,16 +82,20 @@ export default function JoinForm({
     <div className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="max-w-sm mx-auto space-y-6">
         <div className="text-center">
+          {logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt={businessName} className="h-14 max-w-[180px] object-contain mx-auto mb-3" />
+          )}
           <p className="text-sm text-gray-400">კეთილი იყოს თქვენი მობრძანება</p>
-          <h1 className="text-2xl font-bold text-[#185FA5] mt-1">{businessName}</h1>
+          <h1 className="text-2xl font-bold mt-1" style={{ color: accent }}>{businessName}</h1>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
           <p className="text-xs text-gray-400 mb-4 uppercase tracking-widest">სტემპ-ბარათი</p>
           {/* Show pre-filled circles so customers see the "head-start" before signing up */}
-          <StampGrid count={startingStamps} max={maxStamps} />
+          <StampGrid count={startingStamps} max={maxStamps} fillColor={accent} />
           {startingStamps > 0 && (
-            <p className="text-xs text-[#185FA5] font-medium mt-3 text-center">
+            <p className="text-xs font-medium mt-3 text-center" style={{ color: accent }}>
               🎁 {startingStamps} სტემპი უკვე გელოდება!
             </p>
           )}
@@ -104,7 +118,8 @@ export default function JoinForm({
               <p className="text-red-500 text-sm rounded-xl bg-red-50 px-4 py-3">{state.error}</p>
             )}
             <button type="submit" disabled={pending}
-              className="w-full bg-[#185FA5] text-white rounded-xl py-4 text-base font-bold hover:bg-[#134d87] transition disabled:opacity-60 mt-2">
+              style={{ backgroundColor: accent }}
+              className="w-full text-white rounded-xl py-4 text-base font-bold transition disabled:opacity-60 mt-2">
               {pending ? 'დამუშავება...' : 'შემოუერთდი'}
             </button>
           </form>
