@@ -28,9 +28,11 @@ const CONFETTI = [
 export default function QrScanner({
   businessId,
   maxStamps,
+  brandColor,
 }: {
   businessId: string
   maxStamps: number
+  brandColor: string | null
 }) {
   const router = useRouter()
 
@@ -135,7 +137,7 @@ export default function QrScanner({
           fetch('/api/wallet/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId: decoded, stampCount: countToSave, maxStamps, businessId }),
+            body: JSON.stringify({ memberId: decoded, stampCount: countToSave, maxStamps, businessId, brandColor }),
           })
         },
         () => {}

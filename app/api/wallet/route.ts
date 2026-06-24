@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Build the loyalty object JWT ───────────────────────────────────────────
-  const heroUri = `https://magicstamp.vercel.app/api/stamp-image?count=${stampCount}&max=${maxStamps}`
+  const heroUri = `https://magicstamp.vercel.app/api/stamp-image?count=${stampCount}&max=${maxStamps}&bg=${encodeURIComponent(hexColor)}`
 
   const loyaltyObject = {
     id:          `${classId}.${memberId}`,

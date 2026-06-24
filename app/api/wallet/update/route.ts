@@ -5,7 +5,7 @@ const ISSUER_ID      = '3388000000023159453'
 const SHARED_CLASS_ID = `${ISSUER_ID}.magicstamp_loyalty`
 
 export async function POST(req: NextRequest) {
-  const { memberId, stampCount, maxStamps, businessId } = await req.json()
+  const { memberId, stampCount, maxStamps, businessId, brandColor } = await req.json()
 
   const credentials = JSON.parse(process.env.GOOGLE_WALLET_CREDENTIALS!)
 
@@ -15,7 +15,11 @@ export async function POST(req: NextRequest) {
   })
   const walletobjects = google.walletobjects({ version: 'v1', auth })
 
-  const heroUri = `https://magicstamp.vercel.app/api/stamp-image?count=${stampCount}&max=${maxStamps}`
+  const validHex = (c: string | null | undefined) => (c && /^#[0-9A-Fa-f]{6}$/.test(c)) ? c : null
+  const bgParam  = validHex(brandColor)
+  const heroUri  = bgParam
+    ? `https://magicstamp.vercel.app/api/stamp-image?count=${stampCount}&max=${maxStamps}&bg=${encodeURIComponent(bgParam)}`
+    : `https://magicstamp.vercel.app/api/stamp-image?count=${stampCount}&max=${maxStamps}`
 
   const patchBody = {
     loyaltyPoints: {
