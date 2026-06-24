@@ -135,7 +135,7 @@ export default function QrScanner({
           fetch('/api/wallet/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId: decoded, stampCount: countToSave, maxStamps }),
+            body: JSON.stringify({ memberId: decoded, stampCount: countToSave, maxStamps, businessId }),
           })
         },
         () => {}
