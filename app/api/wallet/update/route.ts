@@ -15,8 +15,6 @@ export async function POST(req: NextRequest) {
   })
   const walletobjects = google.walletobjects({ version: 'v1', auth })
 
-  // heroImage lives on the class now (static branded banner), not on the object.
-  // Object patches only update the stamp count and progress text.
   const patchBody = {
     loyaltyPoints: {
       label:   'სტემპი',
@@ -27,6 +25,11 @@ export async function POST(req: NextRequest) {
         header: 'სტემპები',
         body:   `${stampCount}/${maxStamps} სტემპი`,
         id:     'stamp_progress',
+      },
+      {
+        header: 'ჯილდო',
+        body:   `უფასო ყავა ${maxStamps} სტემპის შემდეგ`,
+        id:     'reward',
       },
     ],
   }

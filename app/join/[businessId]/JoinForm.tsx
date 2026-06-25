@@ -71,6 +71,7 @@ export default function JoinForm({
             businessName={businessName}
             businessId={businessId}
             brandColor={brandColor ?? null}
+            logoUrl={logoUrl ?? null}
             stampCount={earnedStamps}
             maxStamps={maxStamps}
           />
@@ -142,12 +143,13 @@ function LegalFooter() {
   )
 }
 
-function WalletButton({ memberId, memberName, businessName, businessId, brandColor, stampCount, maxStamps }: {
+function WalletButton({ memberId, memberName, businessName, businessId, brandColor, logoUrl, stampCount, maxStamps }: {
   memberId: string
   memberName: string
   businessName: string
   businessId: string
   brandColor: string | null
+  logoUrl: string | null
   stampCount: number
   maxStamps: number
 }) {
@@ -161,7 +163,7 @@ function WalletButton({ memberId, memberName, businessName, businessId, brandCol
       const res = await fetch('/api/wallet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ memberId, memberName, stampCount, maxStamps, businessName, businessId, brandColor }),
+        body: JSON.stringify({ memberId, memberName, stampCount, maxStamps, businessName, businessId, brandColor, logoUrl }),
       })
       const data = await res.json()
       if (data.saveUrl) window.open(data.saveUrl, '_blank')

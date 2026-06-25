@@ -11,16 +11,12 @@ function validHex(color: string | null | undefined): string {
 }
 
 export async function POST(req: NextRequest) {
-  const { memberId, memberName, stampCount, maxStamps, businessName, businessId, brandColor } =
+  const { memberId, memberName, stampCount, maxStamps, businessName, businessId, brandColor, logoUrl } =
     await req.json()
 
   const credentials = JSON.parse(process.env.GOOGLE_WALLET_CREDENTIALS!)
   const hexColor    = validHex(brandColor)
   const classId     = `${ISSUER_ID}.magicstamp_loyalty_${businessId}`
-
-  // Hero banner URL — class-level, static branded image (no count/max)
-  const heroUri = `https://magicstamp.vercel.app/api/stamp-image` +
-    `?bg=${encodeURIComponent(hexColor)}&name=${encodeURIComponent(businessName)}`
 
   // ── Upsert the per-business loyalty class ──────────────────────────────────
   const auth = new google.auth.GoogleAuth({
@@ -28,13 +24,6 @@ export async function POST(req: NextRequest) {
     scopes: ['https://www.googleapis.com/auth/wallet_object.issuer'],
   })
   const walletobjects = google.walletobjects({ version: 'v1', auth })
-
-  const heroImageField = {
-    sourceUri: { uri: heroUri },
-    contentDescription: {
-      defaultValue: { language: 'en-US', value: `${businessName} loyalty card` },
-    },
-  }
 
   try {
     await walletobjects.loyaltyclass.insert({
@@ -45,25 +34,33 @@ export async function POST(req: NextRequest) {
         reviewStatus:       'UNDER_REVIEW',
         hexBackgroundColor: hexColor,
         programLogo: {
-          sourceUri: { uri: 'https://placehold.co/512x512.png' },
+          sourceUri: { uri: logoUrl?.trim() ? logoUrl : 'https://placehold.co/512x512.png' },
           contentDescription: {
             defaultValue: { language: 'en-US', value: `${businessName} logo` },
           },
         },
-        heroImage: heroImageField,   // ← on the CLASS, where Google renders it
       },
     })
   } catch (err: any) {
     if (err?.response?.status === 409) {
-      // Class already exists — patch only the fields we're changing;
-      // programLogo, programName, issuerName etc. are preserved by patch semantics
+      // Class already exists — patch only the fields we're changing.
+      // programLogo is only patched when logoUrl is present so we never
+      // overwrite a real logo with the placeholder on repeat joins.
+      const patchBody: Record<string, unknown> = {
+        hexBackgroundColor: hexColor,
+      }
+      if (logoUrl?.trim()) {
+        patchBody.programLogo = {
+          sourceUri: { uri: logoUrl },
+          contentDescription: {
+            defaultValue: { language: 'en-US', value: `${businessName} logo` },
+          },
+        }
+      }
       try {
         await walletobjects.loyaltyclass.patch({
           resourceId:  classId,
-          requestBody: {
-            hexBackgroundColor: hexColor,
-            heroImage:          heroImageField,  // ← update banner alongside color
-          },
+          requestBody: patchBody,
         })
       } catch (patchErr: any) {
         console.error('WALLET_CLASS_PATCH_ERROR:', patchErr?.response?.data ?? patchErr.message)
@@ -75,8 +72,6 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Build the loyalty object JWT ───────────────────────────────────────────
-  // heroImage is NOT set on the object — Google Wallet ignores it there for
-  // loyalty passes; it must live on the class (handled above).
   const loyaltyObject = {
     id:          `${classId}.${memberId}`,
     classId,
@@ -93,6 +88,11 @@ export async function POST(req: NextRequest) {
         header: businessName,
         body:   `${stampCount}/${maxStamps} სტემპი`,
         id:     'stamp_progress',
+      },
+      {
+        header: 'ჯილდო',
+        body:   `უფასო ყავა ${maxStamps} სტემპის შემდეგ`,
+        id:     'reward',
       },
     ],
   }
