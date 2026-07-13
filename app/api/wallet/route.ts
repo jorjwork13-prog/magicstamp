@@ -5,10 +5,15 @@ import jwt from 'jsonwebtoken'
 const ISSUER_ID         = '3388000000023159453'
 const STAMP_IMAGE_BASE  = 'https://magicstamp.vercel.app/api/stamp-image'
 
-/** Validates a hex color string. Returns it if valid, falls back to #185FA5. */
 function validHex(color: string | null | undefined): string {
   if (color && /^#[0-9A-Fa-f]{6}$/.test(color)) return color
   return '#185FA5'
+}
+
+/** Strip browser cache-buster (?v=…) before handing a URL to Google. */
+function cleanUrl(url: string | null | undefined): string | null {
+  if (!url?.trim()) return null
+  return url.replace(/[?&]v=\d+/, '').replace(/[?&]$/, '')
 }
 
 export async function POST(req: NextRequest) {
@@ -18,6 +23,7 @@ export async function POST(req: NextRequest) {
   const credentials = JSON.parse(process.env.GOOGLE_WALLET_CREDENTIALS!)
   const hexColor    = validHex(brandColor)
   const classId     = `${ISSUER_ID}.magicstamp_loyalty_${businessId}`
+  const cleanLogo   = cleanUrl(logoUrl)
 
   // ── Upsert the per-business loyalty class ──────────────────────────────────
   const auth = new google.auth.GoogleAuth({
@@ -34,12 +40,12 @@ export async function POST(req: NextRequest) {
         programName:        businessName,
         reviewStatus:       'UNDER_REVIEW',
         hexBackgroundColor: hexColor,
-        programLogo: {
-          sourceUri: { uri: logoUrl?.trim() ? logoUrl : 'https://placehold.co/512x512.png' },
-          contentDescription: {
-            defaultValue: { language: 'en-US', value: `${businessName} logo` },
+        ...(cleanLogo ? {
+          programLogo: {
+            sourceUri:          { uri: cleanLogo },
+            contentDescription: { defaultValue: { language: 'en-US', value: `${businessName} logo` } },
           },
-        },
+        } : {}),
       },
     })
   } catch (err: any) {
@@ -50,12 +56,10 @@ export async function POST(req: NextRequest) {
       const patchBody: Record<string, unknown> = {
         hexBackgroundColor: hexColor,
       }
-      if (logoUrl?.trim()) {
+      if (cleanLogo) {
         patchBody.programLogo = {
-          sourceUri: { uri: logoUrl },
-          contentDescription: {
-            defaultValue: { language: 'en-US', value: `${businessName} logo` },
-          },
+          sourceUri:          { uri: cleanLogo },
+          contentDescription: { defaultValue: { language: 'en-US', value: `${businessName} logo` } },
         }
       }
       try {

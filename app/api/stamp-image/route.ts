@@ -3,6 +3,8 @@ import sharp from 'sharp'
 
 const WIDTH  = 1032
 const HEIGHT = 336
+const PAD_X  = 56   // min horizontal clearance from canvas edge to nearest circle edge
+const PAD_Y  = 40   // min vertical clearance
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const clean = hex.startsWith('#') ? hex.slice(1) : hex
@@ -19,7 +21,7 @@ function linearize(c: number): number {
   return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
 }
 
-function relativeLuminance(r: number, g: number, b: number): number {
+function luminance(r: number, g: number, b: number): number {
   return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b)
 }
 
@@ -27,61 +29,87 @@ function resolveColors(bgParam: string | null): { bgHex: string; iconColor: stri
   if (bgParam) {
     const rgb = hexToRgb(bgParam)
     if (rgb) {
-      const bgHex    = bgParam.startsWith('#') ? bgParam : `#${bgParam}`
-      const iconColor = relativeLuminance(rgb.r, rgb.g, rgb.b) > 0.4 ? '#1A1A1A' : '#FFFFFF'
-      return { bgHex, iconColor }
+      const bgHex = bgParam.startsWith('#') ? bgParam : `#${bgParam}`
+      return { bgHex, iconColor: luminance(rgb.r, rgb.g, rgb.b) > 0.4 ? '#1A1A1A' : '#FFFFFF' }
     }
   }
   return { bgHex: '#185FA5', iconColor: '#FFFFFF' }
 }
 
+function n2(v: number) { return Math.round(v * 100) / 100 }
+
 export async function GET(req: NextRequest) {
-  const { searchParams } = req.nextUrl
-  const bgParam = searchParams.get('bg')
-  const count   = Math.max(0, parseInt(searchParams.get('count') ?? '0', 10))
-  const max     = Math.max(1, parseInt(searchParams.get('max')   ?? '10', 10))
+  const sp      = req.nextUrl.searchParams
+  const bgParam = sp.get('bg')
+  const count   = Math.max(0, parseInt(sp.get('count') ?? '0', 10))
+  const max     = Math.max(1, parseInt(sp.get('max')   ?? '10', 10))
   const filled  = Math.min(count, max)
 
   const { bgHex, iconColor } = resolveColors(bgParam)
 
-  // Single row for ≤10 stamps, two rows above that.
+  // Layout: single row for ≤10, two rows above that.
   const rows   = max > 10 ? 2 : 1
   const perRow = rows === 1 ? max : Math.ceil(max / 2)
 
-  // Scale circle size so the row always fits inside WIDTH with comfortable padding.
-  const R_SOLID = perRow <= 4  ? 52
-                : perRow <= 6  ? 44
-                : perRow <= 8  ? 38
-                : perRow <= 10 ? 32
-                :               24
-  const R_GLOW = Math.round(R_SOLID * 1.35)
-  const GAP    = Math.round(R_SOLID * 0.45)
+  // ── Radius calculation ────────────────────────────────────────────────────
+  // Gap between adjacent circle edges = R (one full radius of breathing room).
+  // Row step = 2R (diameter) + R (gap) = 3R.
+  // Width budget:  perRow*(2R) + (perRow-1)*R + 2*PAD_X ≤ WIDTH
+  //                R*(3*perRow - 1) ≤ WIDTH - 2*PAD_X
+  const R_fromWidth = Math.floor((WIDTH - 2 * PAD_X) / (3 * perRow - 1))
+  // Height budget (2 rows): top of upper row = HEIGHT/2 − 5R/2 ≥ PAD_Y
+  //                         R ≤ (HEIGHT/2 − PAD_Y) × 2/5
+  const R_fromHeight = rows === 2
+    ? Math.floor((HEIGHT / 2 - PAD_Y) * 2 / 5)
+    : HEIGHT / 2 - PAD_Y  // 1-row height ceiling — not the binding constraint
+  const R = Math.min(64, R_fromWidth, R_fromHeight)
 
-  // Vertical centres for each row.
-  const ROW_GAP    = Math.round(R_SOLID * 2.6)
+  // ── Row vertical centres ──────────────────────────────────────────────────
+  // Row-to-row gap matches the column gap (= R), so: ROW_GAP = 2R + R = 3R.
   const rowCenters = rows === 1
     ? [HEIGHT / 2]
-    : [HEIGHT / 2 - ROW_GAP / 2, HEIGHT / 2 + ROW_GAP / 2]
+    : [HEIGHT / 2 - (3 * R) / 2, HEIGHT / 2 + (3 * R) / 2]
+
+  // ── Circle SVG builder ────────────────────────────────────────────────────
+  const strokeW  = Math.max(2, Math.round(R * 0.12))  // empty ring stroke
+  const checkW   = Math.max(2, Math.round(R * 0.17))  // checkmark stroke
+
+  function makeCheck(cx: number, cy: number): string {
+    // Checkmark as three-point SVG path, colour = bgHex (contrasts with filled circle).
+    const p1 = `${n2(cx - R * 0.30)} ${n2(cy + R * 0.06)}`
+    const p2 = `${n2(cx - R * 0.03)} ${n2(cy + R * 0.32)}`
+    const p3 = `${n2(cx + R * 0.38)} ${n2(cy - R * 0.26)}`
+    return `<path d="M ${p1} L ${p2} L ${p3}" ` +
+           `stroke="${bgHex}" stroke-width="${checkW}" ` +
+           `stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
+  }
 
   let circlesSvg = ''
   let idx = 0
 
   for (let row = 0; row < rows; row++) {
-    const n  = row === 0 ? perRow : max - perRow
-    const tw = n * 2 * R_SOLID + (n - 1) * GAP
-    const x0 = (WIDTH - tw) / 2 + R_SOLID
-    const cy = rowCenters[row]
+    const n   = row === 0 ? perRow : max - perRow
+    // Total row width = n*2R + (n-1)*R = (3n-1)*R
+    const tw  = (3 * n - 1) * R
+    const x0  = (WIDTH - tw) / 2 + R
+    const cy  = rowCenters[row]
 
     for (let col = 0; col < n; col++) {
-      const cx       = x0 + col * (2 * R_SOLID + GAP)
+      const cx       = n2(x0 + col * 3 * R)
       const isFilled = idx < filled
       idx++
 
       if (isFilled) {
-        circlesSvg += `<circle cx="${cx}" cy="${cy}" r="${R_GLOW}"  fill="${iconColor}" fill-opacity="0.22"/>`
-        circlesSvg += `<circle cx="${cx}" cy="${cy}" r="${R_SOLID}" fill="${iconColor}"/>`
+        // Solid circle + inner radial highlight overlay (top-left lit) + checkmark path
+        circlesSvg +=
+          `<circle cx="${cx}" cy="${n2(cy)}" r="${R}" fill="${iconColor}"/>` +
+          `<circle cx="${cx}" cy="${n2(cy)}" r="${R}" fill="url(#hl)"/>` +
+          makeCheck(cx, cy)
       } else {
-        circlesSvg += `<circle cx="${cx}" cy="${cy}" r="${R_SOLID}" fill="none" stroke="${iconColor}" stroke-width="3" stroke-opacity="0.3"/>`
+        // Hollow ring — thin, muted
+        circlesSvg +=
+          `<circle cx="${cx}" cy="${n2(cy)}" r="${R}" ` +
+          `fill="none" stroke="${iconColor}" stroke-width="${strokeW}" stroke-opacity="0.28"/>`
       }
     }
   }
@@ -89,11 +117,15 @@ export async function GET(req: NextRequest) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}">
   <defs>
     <linearGradient id="vgn" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
-      <stop offset="0%"   stop-color="black" stop-opacity="0.22"/>
-      <stop offset="45%"  stop-color="black" stop-opacity="0"/>
-      <stop offset="55%"  stop-color="black" stop-opacity="0"/>
-      <stop offset="100%" stop-color="black" stop-opacity="0.22"/>
+      <stop offset="0%"   stop-color="black" stop-opacity="0.20"/>
+      <stop offset="40%"  stop-color="black" stop-opacity="0"/>
+      <stop offset="60%"  stop-color="black" stop-opacity="0"/>
+      <stop offset="100%" stop-color="black" stop-opacity="0.20"/>
     </linearGradient>
+    <radialGradient id="hl" cx="38%" cy="30%" r="65%">
+      <stop offset="0%"   stop-color="white" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
   </defs>
   <rect width="${WIDTH}" height="${HEIGHT}" fill="${bgHex}"/>
   <rect width="${WIDTH}" height="${HEIGHT}" fill="url(#vgn)"/>
