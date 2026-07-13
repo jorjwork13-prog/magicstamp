@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { google } from 'googleapis'
 
-const ISSUER_ID      = '3388000000023159453'
-const SHARED_CLASS_ID = `${ISSUER_ID}.magicstamp_loyalty`
+const ISSUER_ID        = '3388000000023159453'
+const SHARED_CLASS_ID  = `${ISSUER_ID}.magicstamp_loyalty`
+const STAMP_IMAGE_BASE = 'https://magicstamp.vercel.app/api/stamp-image'
+
+function validHex(color: string | null | undefined): string {
+  if (color && /^#[0-9A-Fa-f]{6}$/.test(color)) return color
+  return '#185FA5'
+}
 
 export async function POST(req: NextRequest) {
   const { memberId, stampCount, maxStamps, businessId, brandColor } = await req.json()
@@ -15,7 +21,14 @@ export async function POST(req: NextRequest) {
   })
   const walletobjects = google.walletobjects({ version: 'v1', auth })
 
+  const hexColor      = validHex(brandColor)
+  const stampImageUrl = `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(hexColor)}&count=${stampCount}&max=${maxStamps}`
+
   const patchBody = {
+    heroImage: {
+      sourceUri:          { uri: stampImageUrl },
+      contentDescription: { defaultValue: { language: 'en-US', value: 'Stamp progress' } },
+    },
     loyaltyPoints: {
       label:   'სტემპი',
       balance: { int: stampCount },

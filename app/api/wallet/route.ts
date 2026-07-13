@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import jwt from 'jsonwebtoken'
 
-const ISSUER_ID = '3388000000023159453'
+const ISSUER_ID         = '3388000000023159453'
+const STAMP_IMAGE_BASE  = 'https://magicstamp.vercel.app/api/stamp-image'
 
 /** Validates a hex color string. Returns it if valid, falls back to #185FA5. */
 function validHex(color: string | null | undefined): string {
@@ -72,6 +73,8 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Build the loyalty object JWT ───────────────────────────────────────────
+  const stampImageUrl = `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(hexColor)}&count=${stampCount}&max=${maxStamps}`
+
   const loyaltyObject = {
     id:          `${classId}.${memberId}`,
     classId,
@@ -79,6 +82,10 @@ export async function POST(req: NextRequest) {
     accountId:   memberId,
     accountName: memberName,
     barcode:     { type: 'QR_CODE', value: memberId, alternateText: memberId },
+    heroImage: {
+      sourceUri:          { uri: stampImageUrl },
+      contentDescription: { defaultValue: { language: 'en-US', value: 'Stamp progress' } },
+    },
     loyaltyPoints: {
       label:   'სტემპი',
       balance: { int: stampCount },

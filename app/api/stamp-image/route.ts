@@ -4,8 +4,6 @@ import sharp from 'sharp'
 const WIDTH  = 1032
 const HEIGHT = 336
 
-// ── Contrast helpers (WCAG relative luminance) ─────────────────────────────
-
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const clean = hex.startsWith('#') ? hex.slice(1) : hex
   if (!/^[0-9A-Fa-f]{6}$/.test(clean)) return null
@@ -37,33 +35,56 @@ function resolveColors(bgParam: string | null): { bgHex: string; iconColor: stri
   return { bgHex: '#185FA5', iconColor: '#FFFFFF' }
 }
 
-function escapeXml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-           .replace(/"/g, '&quot;').replace(/'/g, '&apos;')
-}
-
-// ── Route ──────────────────────────────────────────────────────────────────
-
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
-  const bgParam   = searchParams.get('bg')
-  const rawName   = searchParams.get('name') ?? ''
-  // Truncate long names so they don't overflow the banner
-  const displayName = rawName.length > 22 ? rawName.slice(0, 20) + '…' : rawName || 'LOYALTY'
+  const bgParam = searchParams.get('bg')
+  const count   = Math.max(0, parseInt(searchParams.get('count') ?? '0', 10))
+  const max     = Math.max(1, parseInt(searchParams.get('max')   ?? '10', 10))
+  const filled  = Math.min(count, max)
 
   const { bgHex, iconColor } = resolveColors(bgParam)
 
-  // 5 decorative circles, evenly spaced, centered across the full width
-  // Centers: 156, 336, 516, 696, 876  (symmetric padding = 112px each side)
-  const CIRCLE_CENTERS = [156, 336, 516, 696, 876]
-  const CY      = 222   // vertical center of circles — sits below the text block
-  const R_GLOW  = 60    // soft halo radius
-  const R_SOLID = 44    // filled circle radius
+  // Single row for ≤10 stamps, two rows above that.
+  const rows   = max > 10 ? 2 : 1
+  const perRow = rows === 1 ? max : Math.ceil(max / 2)
 
-  const circles = CIRCLE_CENTERS.map(cx =>
-    `<circle cx="${cx}" cy="${CY}" r="${R_GLOW}"  fill="${iconColor}" fill-opacity="0.18"/>` +
-    `<circle cx="${cx}" cy="${CY}" r="${R_SOLID}" fill="${iconColor}"/>`
-  ).join('\n  ')
+  // Scale circle size so the row always fits inside WIDTH with comfortable padding.
+  const R_SOLID = perRow <= 4  ? 52
+                : perRow <= 6  ? 44
+                : perRow <= 8  ? 38
+                : perRow <= 10 ? 32
+                :               24
+  const R_GLOW = Math.round(R_SOLID * 1.35)
+  const GAP    = Math.round(R_SOLID * 0.45)
+
+  // Vertical centres for each row.
+  const ROW_GAP    = Math.round(R_SOLID * 2.6)
+  const rowCenters = rows === 1
+    ? [HEIGHT / 2]
+    : [HEIGHT / 2 - ROW_GAP / 2, HEIGHT / 2 + ROW_GAP / 2]
+
+  let circlesSvg = ''
+  let idx = 0
+
+  for (let row = 0; row < rows; row++) {
+    const n  = row === 0 ? perRow : max - perRow
+    const tw = n * 2 * R_SOLID + (n - 1) * GAP
+    const x0 = (WIDTH - tw) / 2 + R_SOLID
+    const cy = rowCenters[row]
+
+    for (let col = 0; col < n; col++) {
+      const cx       = x0 + col * (2 * R_SOLID + GAP)
+      const isFilled = idx < filled
+      idx++
+
+      if (isFilled) {
+        circlesSvg += `<circle cx="${cx}" cy="${cy}" r="${R_GLOW}"  fill="${iconColor}" fill-opacity="0.22"/>`
+        circlesSvg += `<circle cx="${cx}" cy="${cy}" r="${R_SOLID}" fill="${iconColor}"/>`
+      } else {
+        circlesSvg += `<circle cx="${cx}" cy="${cy}" r="${R_SOLID}" fill="none" stroke="${iconColor}" stroke-width="3" stroke-opacity="0.3"/>`
+      }
+    }
+  }
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}">
   <defs>
@@ -74,25 +95,9 @@ export async function GET(req: NextRequest) {
       <stop offset="100%" stop-color="black" stop-opacity="0.22"/>
     </linearGradient>
   </defs>
-
-  <!-- Background -->
   <rect width="${WIDTH}" height="${HEIGHT}" fill="${bgHex}"/>
   <rect width="${WIDTH}" height="${HEIGHT}" fill="url(#vgn)"/>
-
-  <!-- Business name -->
-  <text x="64" y="80"
-    font-family="Arial, Helvetica, sans-serif"
-    font-size="34" font-weight="700"
-    fill="${iconColor}">${escapeXml(displayName)}</text>
-
-  <!-- "LOYALTY CARD" subtitle -->
-  <text x="66" y="110"
-    font-family="Arial, Helvetica, sans-serif"
-    font-size="13" letter-spacing="5"
-    fill="${iconColor}" fill-opacity="0.55">LOYALTY CARD</text>
-
-  <!-- Decorative stamp circles -->
-  ${circles}
+  ${circlesSvg}
 </svg>`
 
   const pngBuffer = await sharp(Buffer.from(svg)).png().toBuffer()
@@ -100,7 +105,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(new Uint8Array(pngBuffer), {
     headers: {
       'Content-Type':  'image/png',
-      // URL contains bg+name so different brands get different cache entries
+      // Each unique count+max+bg combo is its own immutable URL.
       'Cache-Control': 'public, max-age=86400, immutable',
     },
   })
