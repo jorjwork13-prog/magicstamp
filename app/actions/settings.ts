@@ -43,15 +43,18 @@ export async function updateSettingsAction(
 
 export async function updateBrandingAction(
   brandColor: string,
-  logoUrl: string | null,
+  logoUrl: string | null | undefined,
 ): Promise<BrandingState> {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const updates: Record<string, string | null> = { brand_color: brandColor }
+  if (logoUrl !== undefined) updates.logo_url = logoUrl
+
   const { error } = await supabase
     .from('businesses')
-    .update({ brand_color: brandColor, logo_url: logoUrl })
+    .update(updates)
     .eq('email', user.email!)
 
   if (error) return { error: error.message }

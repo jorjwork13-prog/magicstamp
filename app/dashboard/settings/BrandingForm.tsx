@@ -15,6 +15,7 @@ export default function BrandingForm({
 }) {
   const [color, setColor]       = useState(currentBrandColor ?? '#185FA5')
   const [logoUrl, setLogoUrl]   = useState<string | null>(currentLogoUrl)
+  const [logoChanged, setLogoChanged] = useState(false)
   const [status, setStatus]     = useState<{ error?: string; success?: boolean }>({})
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving]     = useState(false)
@@ -41,13 +42,15 @@ export default function BrandingForm({
       }
 
       const { data: { publicUrl } } = supabase.storage.from('Logos').getPublicUrl(data.path)
-      finalLogoUrl = publicUrl
-      setLogoUrl(publicUrl)
+      const bustUrl = `${publicUrl}?v=${Date.now()}`
+      finalLogoUrl = bustUrl
+      setLogoUrl(bustUrl)
+      setLogoChanged(true)
       setUploading(false)
     }
 
     setSaving(true)
-    const result = await updateBrandingAction(color, finalLogoUrl)
+    const result = await updateBrandingAction(color, logoChanged ? finalLogoUrl : undefined)
     setSaving(false)
     setStatus(result ?? {})
   }
@@ -90,7 +93,7 @@ export default function BrandingForm({
             />
             <button
               type="button"
-              onClick={() => setLogoUrl(null)}
+              onClick={() => { setLogoUrl(null); setLogoChanged(true) }}
               className="text-xs text-red-400 hover:text-red-600 transition"
             >
               წაშლა

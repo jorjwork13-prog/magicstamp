@@ -8,6 +8,8 @@ export default async function JoinPage({
   params: Promise<{ businessId: string }>
 }) {
   const { businessId } = await params
+  console.log('[JOIN] businessId received:', businessId)
+
   const supabase = await createSupabaseServerClient()
 
   const { data: business, error } = await supabase
@@ -16,7 +18,13 @@ export default async function JoinPage({
     .eq('id', businessId)
     .single()
 
-  if (error) console.error('JOIN_PAGE_ERROR:', error.message, error.code)
+  console.log('[JOIN] query result — data:', JSON.stringify(business), '| error:', JSON.stringify(error))
+
+  if (error) {
+    console.error('[JOIN] error detail — code:', error.code, 'message:', error.message, 'hint:', (error as any).hint, 'details:', (error as any).details)
+    // PGRST116 = no rows found — treat as 404. Any other error is a server fault.
+    if (error.code !== 'PGRST116') throw new Error(error.message)
+  }
 
   if (!business) notFound()
 
