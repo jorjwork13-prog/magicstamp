@@ -4,6 +4,21 @@ import { useState, useRef } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { updateBrandingAction } from '@/app/actions/settings'
 
+const LOGO_EXT: Record<string, string> = {
+  'image/png':     'png',
+  'image/jpeg':    'jpg',
+  'image/webp':    'webp',
+  'image/svg+xml': 'svg',
+}
+
+/** Extract the object path inside the Logos bucket from its public URL. */
+function logoStoragePath(url: string): string | null {
+  const marker = '/storage/v1/object/public/Logos/'
+  const i = url.indexOf(marker)
+  if (i === -1) return null
+  return decodeURIComponent(url.slice(i + marker.length).split('?')[0])
+}
+
 export default function BrandingForm({
   businessId,
   currentBrandColor,
@@ -25,15 +40,24 @@ export default function BrandingForm({
     e.preventDefault()
     setStatus({})
 
+    const supabase = createSupabaseBrowserClient()
+    const previousLogoUrl = logoUrl
     let finalLogoUrl = logoUrl
+    // setLogoChanged(true) won't be visible until the next render, so track
+    // the change locally for this submit as well.
+    let changed = logoChanged
+    let uploaded = false
 
     const file = fileRef.current?.files?.[0]
     if (file) {
       setUploading(true)
-      const supabase = createSupabaseBrowserClient()
+      // Unique path per upload: Google Wallet caches pass images by URL, so
+      // overwriting the same object would keep serving the old cached logo.
+      const ext  = LOGO_EXT[file.type] ?? 'png'
+      const path = `${businessId}/logo_${Date.now()}.${ext}`
       const { data, error } = await supabase.storage
         .from('Logos')
-        .upload(businessId, file, { upsert: true, contentType: file.type })
+        .upload(path, file, { contentType: file.type })
 
       if (error) {
         setStatus({ error: `ლოგოს ატვირთვა ვერ მოხერხდა: ${error.message}` })
@@ -42,17 +66,24 @@ export default function BrandingForm({
       }
 
       const { data: { publicUrl } } = supabase.storage.from('Logos').getPublicUrl(data.path)
-      const bustUrl = `${publicUrl}?v=${Date.now()}`
-      finalLogoUrl = bustUrl
-      setLogoUrl(bustUrl)
+      finalLogoUrl = publicUrl
+      setLogoUrl(publicUrl)
       setLogoChanged(true)
+      changed = true
+      uploaded = true
       setUploading(false)
     }
 
     setSaving(true)
-    const result = await updateBrandingAction(color, logoChanged ? finalLogoUrl : undefined)
+    const result = await updateBrandingAction(color, changed ? finalLogoUrl : undefined)
     setSaving(false)
     setStatus(result ?? {})
+
+    // Best-effort cleanup of the replaced logo file once the new one is saved.
+    if (result?.success && uploaded && previousLogoUrl) {
+      const oldPath = logoStoragePath(previousLogoUrl)
+      if (oldPath) void supabase.storage.from('Logos').remove([oldPath])
+    }
   }
 
   const busy = uploading || saving

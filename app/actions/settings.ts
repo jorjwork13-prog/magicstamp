@@ -17,7 +17,11 @@ function validHex(color: string | null | undefined): string {
   return '#185FA5'
 }
 
-/** Remove the browser cache-buster (?v=…) before handing a URL to Google. */
+/**
+ * Strip the legacy ?v=… cache-buster before handing a URL to Google.
+ * New uploads get a unique file path per logo, so those URLs pass through
+ * unchanged and Google's per-URL image cache is busted by the path itself.
+ */
 function cleanUrl(url: string | null | undefined): string | null {
   if (!url?.trim()) return null
   return url.replace(/[?&]v=\d+/, '').replace(/[?&]$/, '')
@@ -143,6 +147,9 @@ export async function updateBrandingAction(
 
       const patchBody: Record<string, unknown> = { hexBackgroundColor: hexColor }
       if (logo) {
+        // Google rejects a programLogo change on an approved class unless the
+        // patch also resubmits it for review.
+        patchBody.reviewStatus = 'UNDER_REVIEW'
         patchBody.programLogo = {
           sourceUri:          { uri: logo },
           contentDescription: { defaultValue: { language: 'en-US', value: 'Business logo' } },
@@ -153,8 +160,8 @@ export async function updateBrandingAction(
         resourceId:  classId,
         requestBody: patchBody,
       })
-    } catch (err) {
-      console.error('WALLET_BRANDING_PATCH_ERROR:', err)
+    } catch (err: any) {
+      console.error('WALLET_BRANDING_PATCH_ERROR:', err?.response?.data ?? err)
     }
   })
 
