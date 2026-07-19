@@ -20,8 +20,11 @@ export const WALLET_HEX: Record<CardTheme, string> = {
 }
 
 export type CardThemeSpec = {
-  /** display name shown under theme pickers */
+  /** display name shown under theme pickers (English key, matches card_theme) */
   label: string
+  /** Georgian display name — always shown together with `label` so the
+   *  demo page and Settings picker use identical naming */
+  labelKa: string
   cardBg: string
   cardShadow: string
   /** header block */
@@ -61,6 +64,7 @@ export type CardThemeSpec = {
 export const CARD_THEME_SPECS: Record<CardTheme, CardThemeSpec> = {
   honey: {
     label: 'Honey',
+    labelKa: 'თაფლი',
     cardBg: '#FFFDF8',
     cardShadow: '0 24px 50px rgba(43,33,24,0.20)',
     headerBg: '#F2A33C',
@@ -90,6 +94,7 @@ export const CARD_THEME_SPECS: Record<CardTheme, CardThemeSpec> = {
   },
   ink: {
     label: 'Ink',
+    labelKa: 'მუქი',
     cardBg: '#241C12',
     cardShadow: '0 24px 50px rgba(43,33,24,0.35)',
     headerBg: '#2B2118',
@@ -119,6 +124,7 @@ export const CARD_THEME_SPECS: Record<CardTheme, CardThemeSpec> = {
   },
   cream: {
     label: 'Cream',
+    labelKa: 'კრემი',
     cardBg: '#F7F1E5',
     cardShadow: '0 24px 50px rgba(43,33,24,0.14)',
     headerBg: '',

@@ -78,8 +78,11 @@ export default function CardThemeForm({
                 </div>
               </div>
               <p className="text-xs font-semibold text-dtext text-center mt-2">
-                {CARD_THEME_SPECS[theme].label}
+                {CARD_THEME_SPECS[theme].labelKa}
                 {active && <span className="text-dlink"> ✓</span>}
+              </p>
+              <p className="text-[10px] text-dmuted text-center font-mono uppercase tracking-wider">
+                {CARD_THEME_SPECS[theme].label}
               </p>
             </button>
           )

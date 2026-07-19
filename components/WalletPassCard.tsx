@@ -48,6 +48,7 @@ export default function WalletPassCard({
   maxStamps,
   passId,
   qrValue,
+  passIdText,
   subtitle = 'სტემპ-ბარათი',
 }: {
   businessName: string
@@ -58,6 +59,8 @@ export default function WalletPassCard({
   passId: string
   /** override what the QR encodes; defaults to passId */
   qrValue?: string
+  /** override the printed TPL id (demo/preview passes without a real member) */
+  passIdText?: string
   subtitle?: string
 }) {
   const t = CARD_THEME_SPECS[theme]
@@ -224,7 +227,7 @@ export default function WalletPassCard({
           <StyledQr value={qrValue ?? passId} size={110} fg={t.qrFg} bg={t.qrBg} />
         </div>
         <span style={{ fontFamily: mono, fontSize: 10, color: t.passIdColor, letterSpacing: '0.1em' }}>
-          {passIdFromMemberId(passId)}
+          {passIdText ?? passIdFromMemberId(passId)}
         </span>
       </div>
     </div>
