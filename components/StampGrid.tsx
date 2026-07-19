@@ -17,6 +17,7 @@ export default function StampGrid({
   animateLastFilled = false,
   colorByProgress = false,
   fillColor: fillColorProp,
+  emptyColor,
 }: {
   count: number
   max: number
@@ -32,6 +33,9 @@ export default function StampGrid({
   /** Solid fill color for all filled circles (e.g. a business brand color).
    *  Takes precedence over colorByProgress. Customer-facing join page passes this. */
   fillColor?: string
+  /** Border color for empty circles (card-theme stamp empty color).
+   *  Falls back to the dashboard token classes when omitted. */
+  emptyColor?: string
 }) {
   const fillColor = fillColorProp ?? (colorByProgress ? progressFillColor(count, max) : undefined)
   const layout = computeRowLayout(max)
@@ -69,11 +73,16 @@ export default function StampGrid({
                       flexShrink: 0,
                       borderRadius: '50%',
                       backgroundColor: filled && fillColor ? fillColor : undefined,
+                      borderColor: !filled && emptyColor ? emptyColor : undefined,
                       animation: isNew
                         ? 'stamp-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) both'
                         : undefined,
                     }}
-                    className={filled ? (fillColor ? '' : 'bg-honey') : 'border-2 border-dline bg-dbg'}
+                    className={
+                      filled
+                        ? (fillColor ? '' : 'bg-honey')
+                        : (emptyColor ? 'border-2 bg-transparent' : 'border-2 border-dline bg-dbg')
+                    }
                   />
                 )
               })}

@@ -3,6 +3,9 @@ import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import SettingsForm from './SettingsForm'
 import BrandingForm from './BrandingForm'
+import CardThemeForm from './CardThemeForm'
+import { isCardTheme } from '@/lib/card-themes'
+import { selectBusinessWithTheme } from '@/lib/business-select'
 
 export default async function SettingsPage() {
   const supabase = await createSupabaseServerClient()
@@ -13,11 +16,12 @@ export default async function SettingsPage() {
 
   if (!user) redirect('/login')
 
-  const { data: business } = await supabase
-    .from('businesses')
-    .select('id, name, max_stamps, starting_stamps, brand_color, logo_url')
-    .eq('email', user.email!)
-    .single()
+  const { data: business } = await selectBusinessWithTheme(
+    supabase,
+    'id, name, max_stamps, starting_stamps, brand_color, logo_url',
+    'email',
+    user.email!,
+  )
 
   if (!business) redirect('/login')
 
@@ -31,6 +35,18 @@ export default async function SettingsPage() {
           <SettingsForm
             currentMaxStamps={business.max_stamps}
             currentStartingStamps={business.starting_stamps ?? 0}
+          />
+        </section>
+
+        <section className="bg-dbg2 rounded-2xl shadow-sm border border-dline p-6">
+          <h2 className="text-base font-semibold text-dtext mb-1">ბარათის თემა</h2>
+          <p className="text-xs text-dmuted mb-5">
+            აირჩიე, როგორ გამოიყურება კლიენტის ბარათი — არჩევა მაშინვე ინახება.
+          </p>
+          <CardThemeForm
+            currentTheme={isCardTheme(business.card_theme) ? business.card_theme : 'honey'}
+            businessName={business.name}
+            maxStamps={business.max_stamps}
           />
         </section>
 

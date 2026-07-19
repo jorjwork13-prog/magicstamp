@@ -1,13 +1,13 @@
 'use client'
 
-import { QRCodeSVG } from 'qrcode.react'
+import StyledQr from '@/components/StyledQr'
 
 export default function BusinessQrCode({ joinUrl }: { joinUrl: string }) {
   return (
     <div className="flex flex-col items-center gap-4">
-      {/* QR stays on a white plate for scan contrast in both themes */}
+      {/* QR stays on a light plate for scan contrast in both themes */}
       <div className="bg-white p-4 rounded-xl border border-dline">
-        <QRCodeSVG value={joinUrl} size={180} level="M" />
+        <StyledQr value={joinUrl} size={180} fg="#2B2118" bg="#FFFFFF" />
       </div>
       <p className="text-xs text-dmuted text-center break-all max-w-xs">{joinUrl}</p>
       <button

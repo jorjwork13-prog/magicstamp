@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import jwt from 'jsonwebtoken'
+import { WALLET_HEX, isCardTheme } from '@/lib/card-themes'
 
 const ISSUER_ID         = '3388000000023159453'
 const STAMP_IMAGE_BASE  = 'https://magicstamp.vercel.app/api/stamp-image'
@@ -10,18 +11,24 @@ function validHex(color: string | null | undefined): string {
   return '#185FA5'
 }
 
-/** Strip browser cache-buster (?v=…) before handing a URL to Google. */
+/**
+ * Strip the legacy ?v=… cache-buster before handing a URL to Google.
+ * New uploads get a unique file path per logo, so those URLs pass through
+ * unchanged and Google's per-URL image cache is busted by the path itself.
+ */
 function cleanUrl(url: string | null | undefined): string | null {
   if (!url?.trim()) return null
   return url.replace(/[?&]v=\d+/, '').replace(/[?&]$/, '')
 }
 
 export async function POST(req: NextRequest) {
-  const { memberId, memberName, stampCount, maxStamps, businessName, businessId, brandColor, logoUrl } =
+  const { memberId, memberName, stampCount, maxStamps, businessName, businessId, brandColor, logoUrl, cardTheme } =
     await req.json()
 
   const credentials = JSON.parse(process.env.GOOGLE_WALLET_CREDENTIALS!)
   const hexColor    = validHex(brandColor)
+  // card_theme drives the pass background; brand color remains the fallback
+  const passBgColor = isCardTheme(cardTheme) ? WALLET_HEX[cardTheme] : hexColor
   const classId     = `${ISSUER_ID}.magicstamp_loyalty_${businessId}`
   const cleanLogo   = cleanUrl(logoUrl)
 
@@ -39,7 +46,7 @@ export async function POST(req: NextRequest) {
         issuerName:         'MagicStamp',
         programName:        businessName,
         reviewStatus:       'UNDER_REVIEW',
-        hexBackgroundColor: hexColor,
+        hexBackgroundColor: passBgColor,
         ...(cleanLogo ? {
           programLogo: {
             sourceUri:          { uri: cleanLogo },
@@ -54,9 +61,12 @@ export async function POST(req: NextRequest) {
       // programLogo is only patched when logoUrl is present so we never
       // overwrite a real logo with the placeholder on repeat joins.
       const patchBody: Record<string, unknown> = {
-        hexBackgroundColor: hexColor,
+        hexBackgroundColor: passBgColor,
       }
       if (cleanLogo) {
+        // Google rejects a programLogo change on an approved class unless the
+        // patch also resubmits it for review.
+        patchBody.reviewStatus = 'UNDER_REVIEW'
         patchBody.programLogo = {
           sourceUri:          { uri: cleanLogo },
           contentDescription: { defaultValue: { language: 'en-US', value: `${businessName} logo` } },

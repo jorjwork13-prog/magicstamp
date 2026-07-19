@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import StampGrid from '@/components/StampGrid'
+import { CARD_THEME_SPECS, type CardTheme } from '@/lib/card-themes'
 
 type Member = {
   id: string
@@ -22,11 +23,14 @@ function formatDate(iso: string) {
 export default function MembersTable({
   members,
   maxStamps,
+  cardTheme = 'honey',
 }: {
   members: Member[]
   maxStamps: number
+  cardTheme?: CardTheme
 }) {
   const [search, setSearch] = useState('')
+  const themeSpec = CARD_THEME_SPECS[cardTheme]
 
   const filtered = members.filter(
     (m) =>
@@ -90,7 +94,7 @@ export default function MembersTable({
                   <td className="py-3 px-1 min-w-[120px]">
                     <div className="flex items-center gap-2">
                       <div style={{ width: 'fit-content' }}>
-                        <StampGrid count={member.stamp_count} max={maxStamps} circleSize={10} gap={2} animateLastFilled colorByProgress />
+                        <StampGrid count={member.stamp_count} max={maxStamps} circleSize={10} gap={2} animateLastFilled fillColor={themeSpec.stampFill} emptyColor={themeSpec.stampEmpty} />
                       </div>
                       <span className="text-xs text-dmuted tabular-nums whitespace-nowrap">
                         {member.stamp_count}/{maxStamps}

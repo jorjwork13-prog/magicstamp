@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { useActionState } from 'react'
 import Link from 'next/link'
-import { QRCodeSVG } from 'qrcode.react'
 import { joinAction } from '@/app/actions/join'
 import StampGrid from '@/components/StampGrid'
+import WalletPassCard from '@/components/WalletPassCard'
+import type { CardTheme } from '@/lib/card-themes'
 
 export default function JoinForm({
   businessId,
@@ -14,6 +15,7 @@ export default function JoinForm({
   startingStamps,
   logoUrl,
   brandColor,
+  cardTheme = 'honey',
 }: {
   businessId: string
   businessName: string
@@ -21,6 +23,7 @@ export default function JoinForm({
   startingStamps: number
   logoUrl?: string | null
   brandColor?: string | null
+  cardTheme?: CardTheme
 }) {
   const [state, formAction, pending] = useActionState(joinAction, undefined)
   const accent = brandColor ?? '#F2A33C'
@@ -31,18 +34,14 @@ export default function JoinForm({
   if (state?.success && state.memberId) {
     return (
       <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-4 py-10">
-        <div className="w-full max-w-sm bg-cream2 rounded-2xl shadow-sm border border-line p-8 text-center space-y-5">
-          <div>
-            {logoUrl ? (
+        <div className="flex flex-col items-center space-y-5 w-full max-w-sm">
+          <div className="text-center">
+            {logoUrl && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoUrl} alt={businessName} className="h-14 max-w-[160px] object-contain mx-auto mb-3" />
-            ) : (
-              <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-2xl mx-auto mb-3">
-                ✓
-              </div>
             )}
-            <h2 className="text-xl font-bold text-gray-800">გამარჯობა!</h2>
-            <p className="text-gray-500 text-sm mt-1">
+            <h2 className="text-xl font-bold text-ink">გამარჯობა!</h2>
+            <p className="text-muted text-sm mt-1">
               შეუერთდით{' '}
               <span className="font-semibold" style={{ color: accent }}>{businessName}</span>-ს
             </p>
@@ -55,26 +54,31 @@ export default function JoinForm({
             </div>
           )}
 
-          <div className="border-t border-line pt-5 space-y-3">
-            <p className="text-xs text-muted uppercase tracking-widest">ჩემი QR კოდი</p>
-            <div className="flex justify-center">
-              <div className="bg-white p-3 rounded-xl border border-line inline-block">
-                <QRCodeSVG value={state.memberId} size={160} level="M" />
-              </div>
-            </div>
-            <p className="text-xs text-gray-400">ეს QR კოდი შეინახეთ — მაღაზია სტემპს ამ კოდით დაამატებს</p>
-          </div>
-
-          <WalletButton
-            memberId={state.memberId}
-            memberName={state.memberName ?? ''}
+          {/* The member's wallet pass — the QR inside is their personal code */}
+          <WalletPassCard
             businessName={businessName}
-            businessId={businessId}
-            brandColor={brandColor ?? null}
-            logoUrl={logoUrl ?? null}
+            theme={cardTheme}
             stampCount={earnedStamps}
             maxStamps={maxStamps}
+            passId={state.memberId}
           />
+          <p className="text-xs text-gray-400 text-center">
+            ეს QR კოდი შეინახეთ — მაღაზია სტემპს ამ კოდით დაამატებს
+          </p>
+
+          <div className="w-full">
+            <WalletButton
+              memberId={state.memberId}
+              memberName={state.memberName ?? ''}
+              businessName={businessName}
+              businessId={businessId}
+              brandColor={brandColor ?? null}
+              logoUrl={logoUrl ?? null}
+              stampCount={earnedStamps}
+              maxStamps={maxStamps}
+              cardTheme={cardTheme}
+            />
+          </div>
         </div>
         <LegalFooter />
       </div>
@@ -143,7 +147,7 @@ function LegalFooter() {
   )
 }
 
-function WalletButton({ memberId, memberName, businessName, businessId, brandColor, logoUrl, stampCount, maxStamps }: {
+function WalletButton({ memberId, memberName, businessName, businessId, brandColor, logoUrl, stampCount, maxStamps, cardTheme }: {
   memberId: string
   memberName: string
   businessName: string
@@ -152,6 +156,7 @@ function WalletButton({ memberId, memberName, businessName, businessId, brandCol
   logoUrl: string | null
   stampCount: number
   maxStamps: number
+  cardTheme: CardTheme
 }) {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
@@ -163,7 +168,7 @@ function WalletButton({ memberId, memberName, businessName, businessId, brandCol
       const res = await fetch('/api/wallet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ memberId, memberName, stampCount, maxStamps, businessName, businessId, brandColor, logoUrl }),
+        body: JSON.stringify({ memberId, memberName, stampCount, maxStamps, businessName, businessId, brandColor, logoUrl, cardTheme }),
       })
       const data = await res.json()
       if (data.saveUrl) window.open(data.saveUrl, '_blank')

@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import QrScanner from './QrScanner'
 import MembersTable from './MembersTable'
+import { isCardTheme } from '@/lib/card-themes'
+import { selectBusinessWithTheme } from '@/lib/business-select'
 
 export default async function DashboardPage() {
   const supabase = await createSupabaseServerClient()
@@ -13,11 +15,12 @@ export default async function DashboardPage() {
 
   if (!user) redirect('/login')
 
-  const { data: business } = await supabase
-    .from('businesses')
-    .select('id, name, max_stamps, brand_color')
-    .eq('email', user.email!)
-    .single()
+  const { data: business } = await selectBusinessWithTheme(
+    supabase,
+    'id, name, max_stamps, brand_color',
+    'email',
+    user.email!,
+  )
 
   if (!business) redirect('/login')
 
@@ -38,7 +41,11 @@ export default async function DashboardPage() {
 
         {/* Members table */}
         <section className="bg-dbg2 rounded-2xl shadow-sm border border-dline p-6">
-          <MembersTable members={members ?? []} maxStamps={business.max_stamps} />
+          <MembersTable
+            members={members ?? []}
+            maxStamps={business.max_stamps}
+            cardTheme={isCardTheme(business.card_theme) ? business.card_theme : 'honey'}
+          />
         </section>
       </main>
 
