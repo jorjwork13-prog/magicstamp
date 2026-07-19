@@ -19,14 +19,14 @@ export default function SettingsForm({
     <form action={formAction} className="space-y-6">
       {/* Max stamps */}
       <div>
-        <label htmlFor="max_stamps" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="max_stamps" className="block text-sm font-medium text-dtext mb-2">
           სტემპების რაოდენობა
         </label>
         <select
           id="max_stamps"
           name="max_stamps"
           defaultValue={currentMaxStamps}
-          className="w-full rounded-xl border border-line px-4 py-3 text-sm text-ink outline-none focus:border-honey focus:ring-1 focus:ring-honey transition bg-cream2"
+          className="w-full rounded-xl border border-dline px-4 py-3 text-sm text-dtext outline-none focus:border-honey focus:ring-1 focus:ring-honey transition bg-dbg2"
         >
           {MAX_OPTIONS.map((n) => (
             <option key={n} value={n}>
@@ -34,21 +34,21 @@ export default function SettingsForm({
             </option>
           ))}
         </select>
-        <p className="text-xs text-gray-400 mt-2">
+        <p className="text-xs text-dmuted mt-2">
           ეს განსაზღვრავს, რამდენი სტემპი სჭირდება ერთი ბარათის შევსებას.
         </p>
       </div>
 
       {/* Starting stamps */}
       <div>
-        <label htmlFor="starting_stamps" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="starting_stamps" className="block text-sm font-medium text-dtext mb-2">
           წინასწარ შევსებული სტემპები ახალი კლიენტებისთვის
         </label>
         <select
           id="starting_stamps"
           name="starting_stamps"
           defaultValue={currentStartingStamps}
-          className="w-full rounded-xl border border-line px-4 py-3 text-sm text-ink outline-none focus:border-honey focus:ring-1 focus:ring-honey transition bg-cream2"
+          className="w-full rounded-xl border border-dline px-4 py-3 text-sm text-dtext outline-none focus:border-honey focus:ring-1 focus:ring-honey transition bg-dbg2"
         >
           {STARTING_OPTIONS.map((n) => (
             <option key={n} value={n}>
@@ -56,7 +56,7 @@ export default function SettingsForm({
             </option>
           ))}
         </select>
-        <p className="text-xs text-gray-400 mt-2">
+        <p className="text-xs text-dmuted mt-2">
           მხოლოდ ახლად რეგისტრირებულ კლიენტებს მიენიჭებათ ეს სტემპები.
           უკვე არსებული კლიენტები არ შეიცვლებიან.
         </p>

@@ -217,7 +217,7 @@ export default function QrScanner({
             <span className="text-xl leading-none">📷</span>
             სკანირება
           </button>
-          {cameraError && <p className="text-sm text-gray-400 text-center">{cameraError}</p>}
+          {cameraError && <p className="text-sm text-dmuted text-center">{cameraError}</p>}
           {scanError && (
             <div className="w-full max-w-sm bg-red-50 border border-red-200 rounded-xl px-5 py-3 flex items-center justify-between">
               <p className="text-sm text-red-600">{scanError}</p>
@@ -249,7 +249,7 @@ export default function QrScanner({
               <button onClick={() => setScanError(null)} className="text-red-400 hover:text-red-600 text-xl ml-3 leading-none">×</button>
             </div>
           )}
-          <button onClick={cancelScan} className="text-sm text-gray-400 hover:text-gray-600 transition">
+          <button onClick={cancelScan} className="text-sm text-dmuted hover:text-dtext transition">
             გაუქმება
           </button>
         </div>
@@ -336,7 +336,7 @@ export default function QrScanner({
           )}
 
           {/* Auto-restart progress bar */}
-          <div className="w-full max-w-sm h-1 bg-gray-100 rounded-full overflow-hidden">
+          <div className="w-full max-w-sm h-1 bg-dline/60 rounded-full overflow-hidden">
             <div style={{
               height: '100%', width: '100%',
               background: result.rewarded ? '#F59E0B' : '#F2A33C',
@@ -348,7 +348,7 @@ export default function QrScanner({
 
           <button
             onClick={startScan}
-            className="text-sm text-comb hover:text-ink font-medium transition"
+            className="text-sm text-dlink hover:text-dtext font-medium transition"
           >
             📷 ახლავე სკანირება
           </button>

@@ -19,6 +19,12 @@ export const metadata: Metadata = {
   description: "ციფრული ლოიალობის ბარათი თქვენი ბიზნესისთვის",
 };
 
+/* Applies the stored dashboard theme before first paint (no flash on hard
+   loads). Lives in the root layout so React never re-renders it during
+   client navigation. Only the dashboard's .dash wrapper reacts to the
+   attribute, so public pages are unaffected. */
+const dashThemeInit = `try{if(localStorage.getItem('taply-dash-theme')==='dark')document.documentElement.dataset.dashTheme='dark'}catch(e){}`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,8 +34,12 @@ export default function RootLayout({
     <html
       lang="ka"
       className={`${outfit.variable} ${notoGeorgian.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <script dangerouslySetInnerHTML={{ __html: dashThemeInit }} />
+        {children}
+      </body>
     </html>
   );
 }

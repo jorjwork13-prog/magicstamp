@@ -1,7 +1,5 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
-import DashboardDrawer from '@/components/DashboardDrawer'
 
 export default async function AnalyticsPage() {
   const supabase = await createSupabaseServerClient()
@@ -21,27 +19,12 @@ export default async function AnalyticsPage() {
   if (!business) redirect('/login')
 
   return (
-    <div className="min-h-screen bg-cream">
-      {/* Top bar */}
-      <header className="bg-cream2 border-b border-line sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <DashboardDrawer businessName={business.name} />
-            <Link href="/dashboard" className="text-sm text-muted hover:text-comb transition">
-              ← უკან
-            </Link>
-          </div>
-          <span className="text-sm font-semibold text-gray-700">ანალიტიკა</span>
-        </div>
-      </header>
-
-      <main className="max-w-3xl mx-auto px-4 py-6">
-        <section className="bg-cream2 rounded-2xl shadow-sm border border-line p-10 flex flex-col items-center justify-center gap-4 text-center">
-          <span className="text-4xl">📊</span>
-          <h1 className="text-xl font-bold text-gray-800">ანალიტიკა</h1>
-          <p className="text-sm text-gray-400">მალე დაემატება</p>
-        </section>
-      </main>
-    </div>
+    <main className="max-w-3xl mx-auto px-4 py-6">
+      <section className="bg-dbg2 rounded-2xl shadow-sm border border-dline p-10 flex flex-col items-center justify-center gap-4 text-center">
+        <span className="text-4xl">📊</span>
+        <h1 className="text-xl font-bold text-dtext">ანალიტიკა</h1>
+        <p className="text-sm text-dmuted">მალე დაემატება</p>
+      </section>
+    </main>
   )
 }

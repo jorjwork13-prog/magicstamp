@@ -21,11 +21,11 @@ export default function DashboardDrawer({ businessName }: { businessName: string
       <button
         onClick={() => setOpen(true)}
         aria-label="მენიუ"
-        className="w-9 h-9 flex flex-col items-center justify-center gap-[5px] rounded-lg hover:bg-gray-100 transition"
+        className="w-9 h-9 flex flex-col items-center justify-center gap-[5px] rounded-lg hover:bg-honey/15 transition"
       >
-        <span className="block w-5 h-[2px] bg-gray-600 rounded-full" />
-        <span className="block w-5 h-[2px] bg-gray-600 rounded-full" />
-        <span className="block w-5 h-[2px] bg-gray-600 rounded-full" />
+        <span className="block w-5 h-[2px] rounded-full" style={{ background: 'var(--dburger)' }} />
+        <span className="block w-5 h-[2px] rounded-full" style={{ background: 'var(--dburger)' }} />
+        <span className="block w-5 h-[2px] rounded-full" style={{ background: 'var(--dburger)' }} />
       </button>
 
       {/* Backdrop */}
@@ -37,22 +37,22 @@ export default function DashboardDrawer({ businessName }: { businessName: string
 
       {/* Drawer panel */}
       <div
-        className="fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out"
+        className="fixed inset-y-0 left-0 z-50 w-72 bg-dbg2 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out"
         style={{ transform: open ? 'translateX(0)' : 'translateX(-100%)' }}
       >
         {/* Close button */}
         <button
           onClick={() => setOpen(false)}
           aria-label="დახურვა"
-          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 transition text-lg"
+          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full text-dmuted hover:bg-honey/15 transition text-lg"
         >
           ✕
         </button>
 
         {/* Business header */}
-        <div className="px-6 pt-6 pb-5 border-b border-gray-100">
-          <p className="text-[10px] text-muted uppercase tracking-widest font-medium mb-1">Taply</p>
-          <p className="font-semibold text-gray-800 truncate pr-8">{businessName}</p>
+        <div className="px-6 pt-6 pb-5 border-b border-dline">
+          <p className="text-[10px] text-dmuted uppercase tracking-widest font-medium mb-1">Taply</p>
+          <p className="font-semibold text-dtext truncate pr-8">{businessName}</p>
         </div>
 
         {/* Nav items */}
@@ -66,8 +66,8 @@ export default function DashboardDrawer({ businessName }: { businessName: string
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 px-6 py-3.5 text-sm font-medium transition-colors rounded-none ${
                   active
-                    ? 'bg-honey/15 text-comb'
-                    : 'text-gray-700 hover:bg-cream hover:text-comb'
+                    ? 'bg-honey/15 text-dlink'
+                    : 'text-dtext hover:bg-honey/10 hover:text-dlink'
                 }`}
               >
                 <span className="text-base w-6 text-center">{item.icon}</span>
@@ -78,11 +78,11 @@ export default function DashboardDrawer({ businessName }: { businessName: string
         </nav>
 
         {/* Logout */}
-        <div className="border-t border-gray-100 p-4">
+        <div className="border-t border-dline p-4">
           <form action={logoutAction}>
             <button
               type="submit"
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition"
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-dmuted hover:bg-red-500/10 hover:text-red-500 rounded-xl transition"
             >
               <span className="text-base w-6 text-center">🚪</span>
               გასვლა

@@ -73,7 +73,7 @@ export default function StampGrid({
                         ? 'stamp-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) both'
                         : undefined,
                     }}
-                    className={filled ? (fillColor ? '' : 'bg-honey') : 'border-2 border-line bg-cream'}
+                    className={filled ? (fillColor ? '' : 'bg-honey') : 'border-2 border-dline bg-dbg'}
                   />
                 )
               })}
