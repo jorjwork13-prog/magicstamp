@@ -1,17 +1,17 @@
 import Link from 'next/link'
 
-export const metadata = { title: 'მომსახურების პირობები — MagicStamp' }
+export const metadata = { title: 'მომსახურების პირობები — Taply' }
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-white px-4 py-12">
+    <div className="min-h-screen bg-cream px-4 py-12">
       <div className="max-w-2xl mx-auto">
 
-        <Link href="/" className="text-sm text-[#185FA5] hover:underline mb-8 inline-block">
+        <Link href="/" className="text-sm text-[#C97F1E] hover:underline mb-8 inline-block">
           ← მთავარი გვერდი
         </Link>
 
-        <h1 className="text-3xl font-bold text-[#185FA5] mb-2">
+        <h1 className="text-3xl font-bold text-[#C97F1E] mb-2">
           მომსახურების პირობები
         </h1>
         <p className="text-sm text-gray-400 mb-10">ბოლოს განახლდა: 13 ივნისი, 2026</p>
@@ -21,7 +21,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-lg font-semibold text-gray-800 mb-2">1. სერვისის აღწერა</h2>
             <p>
-              MagicStamp არის ციფრული ლოიალობის სტემპ-ბარათების სერვისი ბიზნესებისთვის.
+              Taply არის ციფრული ლოიალობის სტემპ-ბარათების სერვისი ბიზნესებისთვის.
               სერვისი საშუალებას აძლევს ბიზნეს-მფლობელებს შექმნან ციფრული სტემპ-ბარათი
               და მართონ კლიენტების ლოიალობის პროგრამა ქაღალდის ბარათების გარეშე.
               კლიენტებს შეუძლიათ სტემპები Google Wallet-ში შეინახონ.
@@ -42,7 +42,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-lg font-semibold text-gray-800 mb-2">3. სერვისი „როგორც არის"</h2>
             <p>
-              MagicStamp გთავაზობთ სერვისს <span className="font-medium">„როგორც არის"</span> და{' '}
+              Taply გთავაზობთ სერვისს <span className="font-medium">„როგორც არის"</span> და{' '}
               <span className="font-medium">„როგორც ხელმისაწვდომია"</span> პრინციპით.
               ჩვენ ვცდილობთ უზრუნველვყოთ სერვისის მაქსიმალური ხელმისაწვდომობა,
               თუმცა ვერ ვიძლევით გარანტიას შეუფერხებელ, შეცდომისგან თავისუფალ მუშაობაზე.
@@ -61,7 +61,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-lg font-semibold text-gray-800 mb-2">5. პასუხისმგებლობის შეზღუდვა</h2>
             <p>
-              MagicStamp და მისი მფლობელები არ არიან პასუხისმგებელნი რაიმე პირდაპირ, არაპირდაპირ
+              Taply და მისი მფლობელები არ არიან პასუხისმგებელნი რაიმე პირდაპირ, არაპირდაპირ
               ან შემთხვევით ზარალზე, რომელიც გამოწვეულია სერვისის გამოყენებით ან
               გამოყენების შეუძლებლობით. სერვისის გამოყენება ხდება მომხმარებლის სრული
               პასუხისმგებლობით.
@@ -81,7 +81,7 @@ export default function TermsPage() {
             <h2 className="text-lg font-semibold text-gray-800 mb-2">7. კონტაქტი</h2>
             <p>
               კითხვებისთვის დაგვიკავშირდით:{' '}
-              <a href="mailto:jorjwork13@gmail.com" className="text-[#185FA5] hover:underline font-medium">
+              <a href="mailto:jorjwork13@gmail.com" className="text-[#C97F1E] hover:underline font-medium">
                 jorjwork13@gmail.com
               </a>
             </p>

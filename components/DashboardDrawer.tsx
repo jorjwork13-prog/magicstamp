@@ -51,7 +51,7 @@ export default function DashboardDrawer({ businessName }: { businessName: string
 
         {/* Business header */}
         <div className="px-6 pt-6 pb-5 border-b border-gray-100">
-          <p className="text-[10px] text-gray-400 uppercase tracking-widest font-medium mb-1">MagicStamp</p>
+          <p className="text-[10px] text-muted uppercase tracking-widest font-medium mb-1">Taply</p>
           <p className="font-semibold text-gray-800 truncate pr-8">{businessName}</p>
         </div>
 
@@ -66,8 +66,8 @@ export default function DashboardDrawer({ businessName }: { businessName: string
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 px-6 py-3.5 text-sm font-medium transition-colors rounded-none ${
                   active
-                    ? 'bg-blue-50 text-[#185FA5]'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-[#185FA5]'
+                    ? 'bg-honey/15 text-comb'
+                    : 'text-gray-700 hover:bg-cream hover:text-comb'
                 }`}
               >
                 <span className="text-base w-6 text-center">{item.icon}</span>

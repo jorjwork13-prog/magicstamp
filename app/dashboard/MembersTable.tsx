@@ -40,7 +40,7 @@ export default function MembersTable({
       <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold text-gray-800">წევრები</h2>
-          <span className="bg-[#185FA5] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+          <span className="bg-honey text-ink text-xs font-bold px-2 py-0.5 rounded-full">
             {members.length}
           </span>
         </div>
@@ -50,7 +50,7 @@ export default function MembersTable({
           placeholder="ძებნა სახელით ან ტელეფონით..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] w-full sm:w-60 transition"
+          className="border border-line rounded-lg px-3 py-1.5 text-sm outline-none focus:border-honey focus:ring-1 focus:ring-honey w-full sm:w-60 transition"
         />
       </div>
 
@@ -79,7 +79,7 @@ export default function MembersTable({
               {filtered.map((member) => (
                 <tr
                   key={member.id}
-                  className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
+                  className="border-b border-line/50 hover:bg-cream transition-colors"
                 >
                   <td className="py-3 px-1 font-medium text-gray-800">
                     {member.name}

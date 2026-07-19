@@ -26,7 +26,7 @@ export default function SettingsForm({
           id="max_stamps"
           name="max_stamps"
           defaultValue={currentMaxStamps}
-          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition bg-white"
+          className="w-full rounded-xl border border-line px-4 py-3 text-sm text-ink outline-none focus:border-honey focus:ring-1 focus:ring-honey transition bg-cream2"
         >
           {MAX_OPTIONS.map((n) => (
             <option key={n} value={n}>
@@ -48,7 +48,7 @@ export default function SettingsForm({
           id="starting_stamps"
           name="starting_stamps"
           defaultValue={currentStartingStamps}
-          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition bg-white"
+          className="w-full rounded-xl border border-line px-4 py-3 text-sm text-ink outline-none focus:border-honey focus:ring-1 focus:ring-honey transition bg-cream2"
         >
           {STARTING_OPTIONS.map((n) => (
             <option key={n} value={n}>
@@ -74,7 +74,7 @@ export default function SettingsForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full bg-[#185FA5] text-white rounded-xl py-3 text-sm font-bold hover:bg-[#134d87] transition disabled:opacity-60"
+        className="w-full bg-honey text-ink rounded-xl py-3 text-sm font-bold hover:bg-comb transition disabled:opacity-60"
       >
         {pending ? 'იტვირთება...' : 'შენახვა'}
       </button>

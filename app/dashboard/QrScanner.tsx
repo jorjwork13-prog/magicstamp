@@ -212,7 +212,7 @@ export default function QrScanner({
         <div className="flex flex-col items-center gap-3 w-full">
           <button
             onClick={startScan}
-            className="flex items-center gap-2 bg-[#185FA5] text-white rounded-xl px-8 py-4 text-base font-bold hover:bg-[#134d87] active:scale-95 transition"
+            className="flex items-center gap-2 bg-honey text-ink rounded-xl px-8 py-4 text-base font-bold hover:bg-comb active:scale-95 transition"
           >
             <span className="text-xl leading-none">📷</span>
             სკანირება
@@ -339,7 +339,7 @@ export default function QrScanner({
           <div className="w-full max-w-sm h-1 bg-gray-100 rounded-full overflow-hidden">
             <div style={{
               height: '100%', width: '100%',
-              background: result.rewarded ? '#F59E0B' : '#185FA5',
+              background: result.rewarded ? '#F59E0B' : '#F2A33C',
               transformOrigin: 'left',
               animation: `qs-progress ${resultDelayRef.current}ms linear both`,
               borderRadius: '9999px',
@@ -348,7 +348,7 @@ export default function QrScanner({
 
           <button
             onClick={startScan}
-            className="text-sm text-[#185FA5] hover:text-[#134d87] font-medium transition"
+            className="text-sm text-comb hover:text-ink font-medium transition"
           >
             📷 ახლავე სკანირება
           </button>

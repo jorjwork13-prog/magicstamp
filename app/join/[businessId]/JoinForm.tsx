@@ -23,15 +23,15 @@ export default function JoinForm({
   brandColor?: string | null
 }) {
   const [state, formAction, pending] = useActionState(joinAction, undefined)
-  const accent = brandColor ?? '#185FA5'
+  const accent = brandColor ?? '#F2A33C'
 
   // After successful registration, use the count the server actually saved
   const earnedStamps = state?.startingStamps ?? 0
 
   if (state?.success && state.memberId) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-10">
-        <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center space-y-5">
+      <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-4 py-10">
+        <div className="w-full max-w-sm bg-cream2 rounded-2xl shadow-sm border border-line p-8 text-center space-y-5">
           <div>
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -55,10 +55,10 @@ export default function JoinForm({
             </div>
           )}
 
-          <div className="border-t border-gray-100 pt-5 space-y-3">
-            <p className="text-xs text-gray-400 uppercase tracking-widest">ჩემი QR კოდი</p>
+          <div className="border-t border-line pt-5 space-y-3">
+            <p className="text-xs text-muted uppercase tracking-widest">ჩემი QR კოდი</p>
             <div className="flex justify-center">
-              <div className="bg-white p-3 rounded-xl border border-gray-100 inline-block">
+              <div className="bg-white p-3 rounded-xl border border-line inline-block">
                 <QRCodeSVG value={state.memberId} size={160} level="M" />
               </div>
             </div>
@@ -82,7 +82,7 @@ export default function JoinForm({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-10">
+    <div className="min-h-screen bg-cream px-4 py-10">
       <div className="max-w-sm mx-auto space-y-6">
         <div className="text-center">
           {logoUrl && (
@@ -93,8 +93,8 @@ export default function JoinForm({
           <h1 className="text-2xl font-bold mt-1" style={{ color: accent }}>{businessName}</h1>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <p className="text-xs text-gray-400 mb-4 uppercase tracking-widest">სტემპ-ბარათი</p>
+        <div className="bg-cream2 rounded-2xl shadow-sm border border-line p-5">
+          <p className="text-xs text-muted mb-4 uppercase tracking-widest">სტემპ-ბარათი</p>
           {/* Show pre-filled circles so customers see the "head-start" before signing up */}
           <StampGrid count={startingStamps} max={maxStamps} fillColor={accent} />
           {startingStamps > 0 && (
@@ -104,18 +104,18 @@ export default function JoinForm({
           )}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-cream2 rounded-2xl shadow-sm border border-line p-6">
           <form action={formAction} className="space-y-4">
             <input type="hidden" name="businessId" value={businessId} />
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">სახელი</label>
               <input id="name" name="name" type="text" required placeholder="თქვენი სახელი"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition placeholder:text-gray-500" />
+                className="w-full rounded-xl border border-line bg-cream2 px-4 py-3 text-sm text-ink outline-none focus:border-honey focus:ring-1 focus:ring-honey transition placeholder:text-muted" />
             </div>
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1.5">ტელეფონი</label>
               <input id="phone" name="phone" type="tel" required placeholder="555 00 00 00"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition placeholder:text-gray-500" />
+                className="w-full rounded-xl border border-line bg-cream2 px-4 py-3 text-sm text-ink outline-none focus:border-honey focus:ring-1 focus:ring-honey transition placeholder:text-muted" />
             </div>
             {state?.error && (
               <p className="text-red-500 text-sm rounded-xl bg-red-50 px-4 py-3">{state.error}</p>
@@ -136,9 +136,9 @@ export default function JoinForm({
 function LegalFooter() {
   return (
     <div className="flex justify-center gap-4 text-xs text-gray-400 mt-6">
-      <Link href="/privacy" className="hover:text-[#185FA5] transition">კონფიდენციალურობა</Link>
+      <Link href="/privacy" className="hover:text-comb transition">კონფიდენციალურობა</Link>
       <span>·</span>
-      <Link href="/terms" className="hover:text-[#185FA5] transition">პირობები</Link>
+      <Link href="/terms" className="hover:text-comb transition">პირობები</Link>
     </div>
   )
 }

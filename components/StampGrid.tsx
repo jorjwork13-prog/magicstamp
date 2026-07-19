@@ -6,7 +6,7 @@ function progressFillColor(count: number, max: number): string {
   const pct = max > 0 ? count / max : 0
   if (pct >= 0.75) return '#F59E0B'
   if (pct >= 0.4)  return '#10B981'
-  return '#185FA5'
+  return '#C97F1E'
 }
 
 export default function StampGrid({
@@ -73,7 +73,7 @@ export default function StampGrid({
                         ? 'stamp-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) both'
                         : undefined,
                     }}
-                    className={filled ? (fillColor ? '' : 'bg-[#185FA5]') : 'border-2 border-gray-200 bg-gray-50'}
+                    className={filled ? (fillColor ? '' : 'bg-honey') : 'border-2 border-line bg-cream'}
                   />
                 )
               })}

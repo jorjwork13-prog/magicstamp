@@ -11,7 +11,7 @@ export default function BusinessQrCode({ joinUrl }: { joinUrl: string }) {
       <p className="text-xs text-gray-400 text-center break-all max-w-xs">{joinUrl}</p>
       <button
         onClick={() => window.print()}
-        className="px-6 py-2.5 border border-[#185FA5] text-[#185FA5] rounded-lg text-sm font-medium hover:bg-blue-50 transition"
+        className="px-6 py-2.5 border border-comb text-comb rounded-lg text-sm font-medium hover:bg-honey/10 transition"
       >
         დაბეჭდე
       </button>
