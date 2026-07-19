@@ -45,8 +45,8 @@ export default function ThemeToggle() {
     <button
       onClick={toggle}
       aria-label={dark ? 'ღია რეჟიმი' : 'მუქი რეჟიმი'}
-      className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-honey/15 transition"
-      style={{ color: 'var(--dburger)' }}
+      className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-honey/15 transition"
+      style={{ color: 'var(--dtext)' }}
     >
       {/* render both icons only after mount to avoid a hydration mismatch */}
       {dark === null ? null : dark ? (

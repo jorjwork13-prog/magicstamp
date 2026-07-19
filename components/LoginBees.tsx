@@ -12,7 +12,7 @@ import { useEffect, useRef } from 'react'
  * Day cycle follows real local time (v2's "auto" mode) — morning 6-11,
  * noon 11-17, evening 17-21, night 21-6. Each mode also themes the auth
  * card via CSS variables (--boxbg/--boxline/--boxtxt/--fldbg and
- * --taply-logo-hole) set on <html>, so the card cross-fades with its own
+ * --logo-hole-bg) set on <html>, so the card cross-fades with its own
  * CSS transitions.
  *
  * Mobile (≤820px): max 3 bees, no cursor logic.
@@ -46,7 +46,7 @@ function autoMode(): string {
   return 'night'
 }
 
-const CARD_VARS = ['--boxbg', '--boxline', '--boxtxt', '--fldbg', '--taply-logo-hole'] as const
+const CARD_VARS = ['--boxbg', '--boxline', '--boxtxt', '--fldbg', '--logo-hole-bg'] as const
 
 export default function LoginBees() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -220,7 +220,7 @@ export default function LoginBees() {
       root.style.setProperty('--boxline', P.boxline)
       root.style.setProperty('--boxtxt', P.boxtxt)
       root.style.setProperty('--fldbg', P.fldbg)
-      root.style.setProperty('--taply-logo-hole', P.hole)
+      root.style.setProperty('--logo-hole-bg', P.hole)
     }
 
     function staticFrame() {

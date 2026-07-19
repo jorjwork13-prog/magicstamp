@@ -17,15 +17,24 @@ export default function DashboardDrawer({ businessName }: { businessName: string
 
   return (
     <>
-      {/* Hamburger button */}
+      {/* Hamburger button — ink in light / cream in dark, honey-tint hover */}
       <button
         onClick={() => setOpen(true)}
         aria-label="მენიუ"
-        className="w-9 h-9 flex flex-col items-center justify-center gap-[5px] rounded-lg hover:bg-honey/15 transition"
+        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-honey/15 transition"
+        style={{ color: 'var(--dtext)' }}
       >
-        <span className="block w-5 h-[2px] rounded-full" style={{ background: 'var(--dburger)' }} />
-        <span className="block w-5 h-[2px] rounded-full" style={{ background: 'var(--dburger)' }} />
-        <span className="block w-5 h-[2px] rounded-full" style={{ background: 'var(--dburger)' }} />
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        >
+          <path d="M4 6.5h16M4 12h16M4 17.5h16" />
+        </svg>
       </button>
 
       {/* Backdrop */}

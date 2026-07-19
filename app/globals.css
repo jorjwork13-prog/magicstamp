@@ -11,23 +11,27 @@
 
   /* Dashboard theme tokens — light defaults everywhere; the dark override
      below only applies inside .dash, so public pages never go dark. */
-  --dbg:     var(--cream);  /* page background */
-  --dbg2:    var(--cream2); /* cards, header, drawer */
-  --dtext:   var(--ink);
-  --dline:   var(--line);
-  --dmuted:  var(--muted);
-  --dlink:   var(--comb);   /* accent text: comb in light, honey in dark */
-  --dburger: var(--ink);    /* hamburger + header icons: ink / honey */
+  --dbg:    var(--cream);  /* page background */
+  --dbg2:   var(--cream2); /* cards, header, drawer */
+  --dtext:  var(--ink);    /* headings, primary text, header icons */
+  --dline:  var(--line);
+  --dmuted: var(--muted);  /* secondary text: labels, dates, numbers */
+  --dlink:  var(--comb);   /* accent text: comb in light, honey in dark */
+}
+
+/* The logo hole must always match the surface it sits on (honeycomb
+   punch-card concept) — in the dashboard that surface is the header. */
+.dash {
+  --logo-hole-bg: var(--dbg2);
 }
 
 html[data-dash-theme='dark'] .dash {
-  --dbg:     #241C12;
-  --dbg2:    #3A2E1E;
-  --dtext:   #F7F1E5;
-  --dline:   #4A3B26;
-  --dmuted:  #B7A88E;
-  --dlink:   var(--honey);
-  --dburger: var(--honey);
+  --dbg:    #2B2118;                   /* ink, never pure black */
+  --dbg2:   #362A1D;                   /* cards lift softly off the page */
+  --dtext:  #F7F1E5;
+  --dline:  rgba(242, 163, 60, 0.15);  /* borders felt, not seen */
+  --dmuted: #B8A88E;
+  --dlink:  var(--honey);
 }
 
 @theme inline {

@@ -8,8 +8,9 @@ export default function TaplyLogo({ size = 30 }: { size?: number }) {
         strokeWidth="12"
         strokeLinejoin="round"
       />
-      {/* Hole color follows the auth-page day cycle via --taply-logo-hole */}
-      <circle cx="50" cy="50" r="11" fill="var(--taply-logo-hole, #F7F1E5)" />
+      {/* The hole always matches the surface behind it: set --logo-hole-bg
+          on any themed container (dashboard header, auth day-cycle). */}
+      <circle cx="50" cy="50" r="11" fill="var(--logo-hole-bg, #F7F1E5)" />
     </svg>
   )
 }
