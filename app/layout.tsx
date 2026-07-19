@@ -14,9 +14,25 @@ const notoGeorgian = Noto_Sans_Georgian({
   weight: ["400", "600", "700", "800"],
 });
 
+const DESCRIPTION =
+  "Taply — ციფრული ლოიალობის ბარათი თქვენი ბიზნესისთვის. სტემპ-ბარათი, რომელიც კლიენტის ტელეფონში ცხოვრობს.";
+
 export const metadata: Metadata = {
   title: "Taply",
-  description: "ციფრული ლოიალობის ბარათი თქვენი ბიზნესისთვის",
+  description: DESCRIPTION,
+  applicationName: "Taply",
+  openGraph: {
+    title: "Taply",
+    description: DESCRIPTION,
+    siteName: "Taply",
+    type: "website",
+    locale: "ka_GE",
+  },
+  twitter: {
+    card: "summary",
+    title: "Taply",
+    description: DESCRIPTION,
+  },
 };
 
 /* Applies the stored dashboard theme before first paint (no flash on hard

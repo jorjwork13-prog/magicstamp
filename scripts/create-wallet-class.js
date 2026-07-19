@@ -14,15 +14,15 @@ async function main() {
 
   const loyaltyClass = {
     id: CLASS_ID,
-    issuerName: 'MagicStamp',
-    programName: 'MagicStamp Loyalty',
+    issuerName: 'Taply',
+    programName: 'Taply Loyalty',
     reviewStatus: 'UNDER_REVIEW',
     programLogo: {
       sourceUri: {
         uri: 'https://placehold.co/512x512.png',
       },
       contentDescription: {
-        defaultValue: { language: 'en-US', value: 'MagicStamp logo' },
+        defaultValue: { language: 'en-US', value: 'Taply logo' },
       },
     },
   }

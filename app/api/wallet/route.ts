@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     await walletobjects.loyaltyclass.insert({
       requestBody: {
         id:                 classId,
-        issuerName:         'MagicStamp',
+        issuerName:         'Taply',
         programName:        businessName,
         reviewStatus:       'UNDER_REVIEW',
         hexBackgroundColor: passBgColor,

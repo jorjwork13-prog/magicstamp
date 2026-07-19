@@ -19,7 +19,7 @@ async function main() {
         uri: 'https://magicstamp.vercel.app/logo.png',
       },
       contentDescription: {
-        defaultValue: { language: 'en-US', value: 'MagicStamp logo' },
+        defaultValue: { language: 'en-US', value: 'Taply logo' },
       },
     },
   }
