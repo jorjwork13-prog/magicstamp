@@ -6,6 +6,21 @@ import s from './page.module.css'
 const STAMP_TOTAL = 10
 const STAMP_FILLED = 8
 
+const STORY = [
+  {
+    title: 'ქაღალდის ბარათი იკარგება',
+    text: 'ჯიბეში ირეცხება, სახლში რჩება, ნაგავში ხვდება. კლიენტი კი — აღარ ბრუნდება.',
+  },
+  {
+    title: 'Taply ტელეფონში ცხოვრობს',
+    text: 'ბარათი ემატება Apple ან Google Wallet-ში ერთი სკანით. აპის ჩამოტვირთვა არ სჭირდება.',
+  },
+  {
+    title: 'კლიენტი ბრუნდება',
+    text: 'ის ხედავს: კიდევ 2 ყავა — და საჩუქარი. დაბრუნების მიზეზი ყოველთვის თან აქვს.',
+  },
+]
+
 const STEPS = [
   {
     n: 1,
@@ -51,17 +66,17 @@ export default function HomePage() {
         <div className={s.heroIn}>
           <div className={s.heroTxt}>
             <h1 className={s.h1}>
-              ლოიალობის ბარათი,
+              მიეცი კლიენტს
               <br />
-              რომელიც <em>ტელეფონშია</em>
+              დაბრუნების <em>მიზეზი</em>
             </h1>
             <p className={s.sub}>
-              შენი კლიენტი ქაღალდის ბარათს კარგავს. ციფრული ბარათი Apple და
-              Google Wallet-ში ცხოვრობს — და კლიენტი ბრუნდება.
+              ციფრული ლოიალობის ბარათი, რომელიც კლიენტის ტელეფონში ცხოვრობს —
+              Apple და Google Wallet-ში. ქაღალდი აღარ იკარგება.
             </p>
             <div className={s.ctaRow}>
               <Link className={s.cta} href="/register">დაიწყე უფასოდ</Link>
-              <Link className={s.cta2} href="/join/demo">ნახე დემო</Link>
+              <Link className={s.cta2} href="/join/demo">მოითხოვე დემო</Link>
             </div>
             <p className={s.trust}>🍯 კაფე · სალონი · ბარბერშოპი · სპორტდარბაზი</p>
           </div>
@@ -100,6 +115,36 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* ---------- STORY ---------- */}
+      <section className={s.section}>
+        <div className={s.story}>
+          {STORY.map((beat) => (
+            <div key={beat.title} className={s.storyRow}>
+              <div className={s.storyTxt}>
+                <h2 className={s.storyT}>{beat.title}</h2>
+                <p className={s.storyP}>{beat.text}</p>
+              </div>
+              <div className={s.storyHex} aria-hidden="true">
+                <svg width="130" height="130" viewBox="0 0 100 100">
+                  <polygon
+                    points="50,12 83,31 83,69 50,88 17,69 17,31"
+                    fill="none"
+                    stroke="#E3D9C6"
+                    strokeWidth="5"
+                    strokeLinejoin="round"
+                  />
+                  <polygon
+                    points="50,31 66.5,40.5 66.5,59.5 50,69 33.5,59.5 33.5,40.5"
+                    fill="#F2A33C"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* ---------- HOW IT WORKS ---------- */}
       <section className={s.section}>
@@ -151,6 +196,32 @@ export default function HomePage() {
               </Link>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ---------- FOUNDER ---------- */}
+      <section className={s.section}>
+        <h2 className={s.secT}>ვინ დგას Taply-ს უკან</h2>
+        <div className={s.founder}>
+          {/* TODO: replace with founder photo /public/founder.jpg */}
+          <div className={s.founderPh}>
+            <TaplyLogo size={64} />
+          </div>
+          <div className={s.founderTxt}>
+            <p>
+              გამარჯობა, მე გიორგი ვარ. Taply-ს თბილისში ვაშენებ — იმ კაფეებისა
+              და სალონებისთვის, რომლებიც ჩვენს უბნებს აცოცხლებენ. თუ კითხვა
+              გაქვს, პირადად მომწერე.
+            </p>
+            <a
+              className={s.founderCta}
+              href="https://instagram.com/taplyapp"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              მომწერე
+            </a>
+          </div>
         </div>
       </section>
 

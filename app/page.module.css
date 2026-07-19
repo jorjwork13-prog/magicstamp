@@ -178,6 +178,43 @@
   text-align: center;
 }
 
+/* ---------- STORY ---------- */
+.story {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+.storyRow {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+.storyRow:nth-child(even) {
+  flex-direction: row-reverse;
+}
+.storyTxt {
+  flex: 1;
+  min-width: 0;
+}
+.storyT {
+  font-size: clamp(24px, 3.4vw, 38px);
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  line-height: 1.15;
+}
+.storyP {
+  margin-top: 12px;
+  font-size: clamp(14.5px, 1.5vw, 17px);
+  color: #6e5f49;
+  line-height: 1.6;
+  max-width: 440px;
+}
+.storyHex {
+  flex: 0 0 200px;
+  display: flex;
+  justify-content: center;
+}
+
 /* ---------- SECTIONS ---------- */
 .section {
   max-width: 1100px;
@@ -251,6 +288,50 @@
   font-weight: 600;
   color: var(--muted);
 }
+/* ---------- FOUNDER ---------- */
+.founder {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  max-width: 760px;
+  margin: 0 auto;
+  background: var(--cream2);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 36px;
+}
+.founderPh {
+  flex: 0 0 160px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.founderTxt {
+  flex: 1;
+  min-width: 0;
+}
+.founderTxt p {
+  font-size: 15.5px;
+  color: #6e5f49;
+  line-height: 1.65;
+}
+.founderCta {
+  display: inline-block;
+  margin-top: 18px;
+  padding: 10px 22px;
+  border-radius: 99px;
+  background: var(--ink);
+  color: var(--cream2);
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}
+
 .footer {
   text-align: center;
   padding: 40px;
@@ -296,5 +377,27 @@
   }
   .phone {
     width: 210px;
+  }
+  .storyRow,
+  .storyRow:nth-child(even) {
+    flex-direction: column;
+    text-align: center;
+    gap: 18px;
+  }
+  .storyP {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .storyHex {
+    flex: 0 0 auto;
+  }
+  .storyHex svg {
+    width: 96px;
+    height: 96px;
+  }
+  .founder {
+    flex-direction: column;
+    text-align: center;
+    padding: 28px 22px;
   }
 }
