@@ -8,7 +8,7 @@ import DashboardDrawer from '@/components/DashboardDrawer'
 export default function DashboardHeader({ businessName }: { businessName: string }) {
   return (
     <header className="bg-dbg2 border-b border-dline sticky top-0 z-30">
-      <div className="max-w-3xl mx-auto pl-0.5 pr-4 py-3 flex items-center justify-between">
+      <div className="w-full pl-0.5 pr-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-1">
           <DashboardDrawer businessName={businessName} />
           <Link

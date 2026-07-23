@@ -8,14 +8,14 @@ function formatDate(iso: string | null) {
 
 export default function MemberSegmentList({
   title,
-  icon,
+  Icon,
   emptyLabel,
   members,
   total,
   maxStamps,
 }: {
   title: string
-  icon: string
+  Icon: React.ComponentType<{ size?: number }>
   emptyLabel: string
   members: AnalyticsMember[]
   total: number
@@ -25,7 +25,7 @@ export default function MemberSegmentList({
     <div className="bg-dbg2 rounded-2xl shadow-sm border border-dline p-5 flex flex-col">
       <div className="flex items-center justify-between mb-4 gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-base">{icon}</span>
+          <span className="text-honey flex"><Icon /></span>
           <h3 className="text-sm font-semibold text-dtext">{title}</h3>
         </div>
         <span className="bg-honey text-ink text-xs font-bold px-2 py-0.5 rounded-full">{total}</span>

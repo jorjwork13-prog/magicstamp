@@ -3,6 +3,16 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { computeDailySignups, computeKpis, computeSegments, type AnalyticsMember } from '@/lib/analytics'
 import SignupsChart from './SignupsChart'
 import MemberSegmentList from './MemberSegmentList'
+import {
+  AnalyticsIcon,
+  PeopleIcon,
+  CycleIcon,
+  GiftIcon,
+  PulseIcon,
+  StarIcon,
+  SparkleIcon,
+  AlertIcon,
+} from '@/components/HexIcons'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,7 +47,7 @@ export default async function AnalyticsPage() {
     return (
       <main className="max-w-3xl mx-auto px-4 py-6">
         <section className="bg-dbg2 rounded-2xl shadow-sm border border-dline p-10 flex flex-col items-center justify-center gap-4 text-center">
-          <span className="text-4xl">📊</span>
+          <span className="text-honey"><AnalyticsIcon size={46} /></span>
           <h1 className="text-xl font-bold text-dtext">ანალიტიკა</h1>
           <p className="text-sm text-dmuted max-w-sm">
             ჯერ არ გაქვს საკმარისი მონაცემი — სტატისტიკა გამოჩნდება პირველი 5 წევრის შემდეგ.
@@ -52,14 +62,14 @@ export default async function AnalyticsPage() {
   const segments = computeSegments(members, business.max_stamps)
 
   const kpiCards = [
-    { label: 'სულ წევრები', value: String(kpis.totalMembers), icon: '👥' },
+    { label: 'სულ წევრები', value: String(kpis.totalMembers), Icon: PeopleIcon },
     {
       label: 'დაბრუნების %',
       value: kpis.returnRatePercent === null ? '—' : `${kpis.returnRatePercent}%`,
-      icon: '🔁',
+      Icon: CycleIcon,
     },
-    { label: 'გაცემული ჯილდოები', value: String(kpis.rewardsIssued), icon: '🎁' },
-    { label: 'აქტიური ამ კვირაში', value: String(kpis.activeThisWeek), icon: '⚡' },
+    { label: 'გაცემული ჯილდოები', value: String(kpis.rewardsIssued), Icon: GiftIcon },
+    { label: 'აქტიური ამ კვირაში', value: String(kpis.activeThisWeek), Icon: PulseIcon },
   ]
 
   return (
@@ -71,7 +81,7 @@ export default async function AnalyticsPage() {
             key={card.label}
             className="bg-dbg2 rounded-2xl shadow-sm border border-dline p-4 flex flex-col gap-1"
           >
-            <span className="text-lg">{card.icon}</span>
+            <span className="text-honey"><card.Icon /></span>
             <span className="text-2xl font-bold text-dtext tabular-nums">{card.value}</span>
             <span className="text-xs text-dmuted leading-tight">{card.label}</span>
           </div>
@@ -88,7 +98,7 @@ export default async function AnalyticsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <MemberSegmentList
           title="მუდმივები"
-          icon="⭐"
+          Icon={StarIcon}
           emptyLabel="ჯერ არავინაა ამ სეგმენტში"
           members={segments.loyal}
           total={segments.loyalTotal}
@@ -96,7 +106,7 @@ export default async function AnalyticsPage() {
         />
         <MemberSegmentList
           title="ახლები"
-          icon="🌱"
+          Icon={SparkleIcon}
           emptyLabel="ბოლო 7 დღეში ახალი წევრი არ ყოფილა"
           members={segments.fresh}
           total={segments.freshTotal}
@@ -105,7 +115,7 @@ export default async function AnalyticsPage() {
         <div className="sm:col-span-2">
           <MemberSegmentList
             title="საყურადღებო"
-            icon="⚠️"
+            Icon={AlertIcon}
             emptyLabel="ამჟამად არავინაა ყურადღების საჭირო"
             members={segments.atRisk}
             total={segments.atRiskTotal}
