@@ -7,8 +7,8 @@ import DashboardDrawer from '@/components/DashboardDrawer'
  *  (logo links back to /dashboard), business name + theme toggle right. */
 export default function DashboardHeader({ businessName }: { businessName: string }) {
   return (
-    <header className="bg-dbg2 border-b border-dline sticky top-0 z-10">
-      <div className="max-w-3xl mx-auto pl-2 pr-4 py-3 flex items-center justify-between">
+    <header className="bg-dbg2 border-b border-dline sticky top-0 z-30">
+      <div className="max-w-3xl mx-auto pl-0.5 pr-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-1">
           <DashboardDrawer businessName={businessName} />
           <Link

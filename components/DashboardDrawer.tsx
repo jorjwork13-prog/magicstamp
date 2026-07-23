@@ -5,10 +5,75 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logoutAction } from '@/app/actions/auth'
 
+/** Shared hexagon frame for every drawer icon — same size, stroke weight and
+ *  corner style as the logo, so the set reads as one designed family. Icons
+ *  inherit color from the link (ink in light / cream in dark, honey via
+ *  text-dlink when active). Inner detail fills use --dbg2 to punch through. */
+function HexIcon({ children }: { children: React.ReactNode }) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinejoin="round"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3 L20 7.5 L20 16.5 L12 21 L4 16.5 L4 7.5 Z" />
+      {children}
+    </svg>
+  )
+}
+
+/* Profile / QR — hexagon with a QR finder-dot pattern */
+const ProfileIcon = () => (
+  <HexIcon>
+    <g fill="currentColor" stroke="none">
+      <rect x="8" y="8" width="2" height="2" rx="0.4" />
+      <rect x="14" y="8" width="2" height="2" rx="0.4" />
+      <rect x="11" y="11" width="2" height="2" rx="0.4" />
+      <rect x="8" y="14" width="2" height="2" rx="0.4" />
+      <rect x="14" y="14" width="2" height="2" rx="0.4" />
+    </g>
+  </HexIcon>
+)
+
+/* Settings — hexagon with adjustment-dial sliders */
+const SettingsIcon = () => (
+  <HexIcon>
+    <line x1="8" y1="10.5" x2="16" y2="10.5" />
+    <circle cx="13.5" cy="10.5" r="1.5" fill="var(--dbg2)" />
+    <line x1="8" y1="14" x2="16" y2="14" />
+    <circle cx="10.5" cy="14" r="1.5" fill="var(--dbg2)" />
+  </HexIcon>
+)
+
+/* Analytics — hexagon with a rising bar-chart glyph */
+const AnalyticsIcon = () => (
+  <HexIcon>
+    <line x1="8" y1="15.5" x2="16" y2="15.5" />
+    <line x1="9.5" y1="15.5" x2="9.5" y2="13.5" />
+    <line x1="12" y1="15.5" x2="12" y2="11.5" />
+    <line x1="14.5" y1="15.5" x2="14.5" y2="9.5" />
+  </HexIcon>
+)
+
+/* Logout — hexagon with an exit-arrow glyph */
+const LogoutIcon = () => (
+  <HexIcon>
+    <path d="M11.5 7.8 H8.5 V16.2 H11.5" />
+    <line x1="10.3" y1="12" x2="16.3" y2="12" />
+    <path d="M14 9.8 L16.4 12 L14 14.2" />
+  </HexIcon>
+)
+
 const NAV_ITEMS = [
-  { icon: '👤', label: 'პროფილი',    href: '/dashboard/profile'   },
-  { icon: '⚙️', label: 'პარამეტრები', href: '/dashboard/settings'  },
-  { icon: '📊', label: 'ანალიტიკა',  href: '/dashboard/analytics' },
+  { Icon: ProfileIcon,   label: 'პროფილი',    href: '/dashboard/profile'   },
+  { Icon: SettingsIcon,  label: 'პარამეტრები', href: '/dashboard/settings'  },
+  { Icon: AnalyticsIcon, label: 'ანალიტიკა',  href: '/dashboard/analytics' },
 ]
 
 export default function DashboardDrawer({ businessName }: { businessName: string }) {
@@ -79,7 +144,7 @@ export default function DashboardDrawer({ businessName }: { businessName: string
                     : 'text-dtext hover:bg-honey/10 hover:text-dlink'
                 }`}
               >
-                <span className="text-base w-6 text-center">{item.icon}</span>
+                <span className="w-6 flex justify-center"><item.Icon /></span>
                 {item.label}
               </Link>
             )
@@ -93,7 +158,7 @@ export default function DashboardDrawer({ businessName }: { businessName: string
               type="submit"
               className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-dmuted hover:bg-red-500/10 hover:text-red-500 rounded-xl transition"
             >
-              <span className="text-base w-6 text-center">🚪</span>
+              <span className="w-6 flex justify-center"><LogoutIcon /></span>
               გასვლა
             </button>
           </form>
