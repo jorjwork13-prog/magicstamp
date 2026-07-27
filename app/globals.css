@@ -48,11 +48,11 @@ html[data-dash-theme='dark'] .dash {
   --color-dline:  var(--dline);
   --color-dmuted: var(--dmuted);
   --color-dlink:  var(--dlink);
-  --font-sans: var(--font-outfit), var(--font-noto-georgian), sans-serif;
+  --font-sans: var(--font-fredoka), var(--font-noto-georgian), sans-serif;
 }
 
 body {
   background: var(--cream);
   color: var(--ink);
-  font-family: var(--font-outfit), var(--font-noto-georgian), sans-serif;
+  font-family: var(--font-fredoka), var(--font-noto-georgian), sans-serif;
 }
