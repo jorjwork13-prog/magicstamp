@@ -79,6 +79,13 @@ export default function JoinForm({
               cardTheme={cardTheme}
             />
           </div>
+
+          {/* Their own code to share. Whether *they* arrived via someone
+              else's code is deliberately not surfaced — the referrer is the
+              one who earns from it. */}
+          {state.referralCode && (
+            <ReferralCodeCard code={state.referralCode} accent={accent} />
+          )}
         </div>
         <LegalFooter />
       </div>
@@ -113,13 +120,30 @@ export default function JoinForm({
             <input type="hidden" name="businessId" value={businessId} />
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">სახელი</label>
-              <input id="name" name="name" type="text" required placeholder="თქვენი სახელი"
+              <input id="name" name="name" type="text" required placeholder="თქვენი სახელი" defaultValue={state?.values?.name}
                 className="w-full rounded-xl border border-line bg-cream2 px-4 py-3 text-sm text-ink outline-none focus:border-honey focus:ring-1 focus:ring-honey transition placeholder:text-muted" />
             </div>
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1.5">ტელეფონი</label>
-              <input id="phone" name="phone" type="tel" required placeholder="555 00 00 00"
+              <input id="phone" name="phone" type="tel" required placeholder="555 00 00 00" defaultValue={state?.values?.phone}
                 className="w-full rounded-xl border border-line bg-cream2 px-4 py-3 text-sm text-ink outline-none focus:border-honey focus:ring-1 focus:ring-honey transition placeholder:text-muted" />
+            </div>
+            <div>
+              <label htmlFor="referralCode" className="block text-sm font-medium text-gray-700 mb-1.5">
+                მოწვევის კოდი (არასავალდებულო)
+              </label>
+              <input id="referralCode" name="referralCode" type="text" placeholder="მაგ: K7X2"
+                defaultValue={state?.values?.referralCode}
+                maxLength={4} autoCapitalize="characters" autoComplete="off" spellCheck={false}
+                aria-invalid={state?.referralError ? true : undefined}
+                className={`w-full rounded-xl border bg-cream2 px-4 py-3 text-sm text-ink uppercase tracking-widest outline-none focus:ring-1 transition placeholder:text-muted placeholder:normal-case placeholder:tracking-normal ${
+                  state?.referralError
+                    ? 'border-amber-400 focus:border-amber-400 focus:ring-amber-400'
+                    : 'border-line focus:border-honey focus:ring-honey'
+                }`} />
+              {state?.referralError && (
+                <p className="text-amber-700 text-xs mt-1.5 leading-relaxed">{state.referralError}</p>
+              )}
             </div>
             {state?.error && (
               <p className="text-red-500 text-sm rounded-xl bg-red-50 px-4 py-3">{state.error}</p>
@@ -133,6 +157,38 @@ export default function JoinForm({
         </div>
         <LegalFooter />
       </div>
+    </div>
+  )
+}
+
+function ReferralCodeCard({ code, accent }: { code: string; accent: string }) {
+  const [copied, setCopied] = useState(false)
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(code)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2_000)
+    } catch {
+      // Clipboard is blocked on insecure origins and some in-app browsers —
+      // the code stays selectable on screen either way.
+    }
+  }
+
+  return (
+    <div className="w-full rounded-2xl border border-line bg-cream2 p-4 text-center">
+      <p className="text-sm text-muted">შენი მოწვევის კოდი:</p>
+      <p className="text-3xl font-bold tracking-[0.3em] mt-1.5 select-all" style={{ color: accent }}>
+        {code}
+      </p>
+      <p className="text-xs text-muted mt-1.5">გაუზიარე მეგობრებს</p>
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="mt-3 w-full rounded-xl border border-line py-2.5 text-sm font-semibold text-ink hover:bg-cream transition"
+      >
+        {copied ? 'დაკოპირდა ✓' : 'კოპირება'}
+      </button>
     </div>
   )
 }
