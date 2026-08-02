@@ -2,7 +2,7 @@
  *
  * Everything is driven by one shared 6s CSS timeline (no JS, no timers), so
  * the layers can never drift out of sync:
- *   0.00–0.50s  resting card, 3/5 stamps
+ *   0.00–0.50s  resting card, 8/10 stamps
  *   0.50–1.00s  double-tap ripple on the side button
  *   0.90–1.20s  screen dims into the Wallet sheet
  *   1.20–2.00s  card stack slides up, card fades in (ease-out)

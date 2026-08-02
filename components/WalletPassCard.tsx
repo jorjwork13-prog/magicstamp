@@ -50,6 +50,7 @@ export default function WalletPassCard({
   qrValue,
   passIdText,
   subtitle = 'სტემპ-ბარათი',
+  rewardText,
 }: {
   businessName: string
   theme: CardTheme
@@ -62,6 +63,8 @@ export default function WalletPassCard({
   /** override the printed TPL id (demo/preview passes without a real member) */
   passIdText?: string
   subtitle?: string
+  /** override the reward band copy (marketing mocks that name the reward) */
+  rewardText?: string
 }) {
   const t = CARD_THEME_SPECS[theme]
   const remaining = Math.max(0, maxStamps - stampCount)
@@ -196,9 +199,10 @@ export default function WalletPassCard({
             <circle cx="50" cy="50" r="13" fill={t.rewardIcon} />
           </svg>
           <span style={{ fontSize: 14, fontWeight: 600, color: t.rewardText, lineHeight: 1.4 }}>
-            {remaining > 0
-              ? `კიდევ ${remaining} ვიზიტი — და ერთი საჩუქრად`
-              : 'ბარათი სავსეა — მიიღე საჩუქარი'}
+            {rewardText ??
+              (remaining > 0
+                ? `კიდევ ${remaining} ვიზიტი — და ერთი საჩუქრად`
+                : 'ბარათი სავსეა — მიიღე საჩუქარი')}
           </span>
         </div>
       </div>

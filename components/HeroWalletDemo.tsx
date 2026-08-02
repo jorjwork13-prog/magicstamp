@@ -4,7 +4,7 @@ import s from './HeroWalletDemo.module.css'
 /**
  * Hero visual: an iPhone frame that loops the Apple Wallet add-flow —
  * double-tap the side button, the wallet sheet slides up with our pass,
- * „დაემატა ✓", back to the resting 3/5 card.
+ * „დაემატა ✓", back to the resting 8/10 card.
  *
  * Server component on purpose: the whole loop is one CSS timeline (see
  * HeroWalletDemo.module.css), so the hero ships no extra JavaScript and
@@ -29,12 +29,13 @@ export default function HeroWalletDemo() {
               <WalletPassCard
                 businessName="კაფე ვერა"
                 theme="honey"
-                stampCount={3}
-                maxStamps={5}
+                stampCount={8}
+                maxStamps={10}
                 passId="hero"
                 qrValue="https://taply.ge"
                 passIdText="TPL-7Q4M-92KE"
                 subtitle="ყავის ბარათი · თბილისი"
+                rewardText="კიდევ 2 ყავა — და ერთი საჩუქრად"
               />
             </div>
           </div>
