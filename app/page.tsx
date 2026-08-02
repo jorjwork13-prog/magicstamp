@@ -1,10 +1,8 @@
 import Link from 'next/link'
 import TaplyLogo from '@/components/TaplyLogo'
 import HeroBees from '@/components/HeroBees'
+import HeroWalletDemo from '@/components/HeroWalletDemo'
 import s from './page.module.css'
-
-const STAMP_TOTAL = 10
-const STAMP_FILLED = 8
 
 const STORY = [
   {
@@ -82,36 +80,7 @@ export default function HomePage() {
           </div>
 
           <div className={s.heroVis}>
-            <div className={s.phone}>
-              <div className={s.scr}>
-                <div className={s.pass}>
-                  <div className={s.passRow}>
-                    <span className={s.biz}>კაფე „ვერა&quot;</span>
-                    <span className={s.tp}>Taply</span>
-                  </div>
-                </div>
-                <div className={s.stamps}>
-                  {Array.from({ length: STAMP_TOTAL }, (_, i) => {
-                    const filled = i < STAMP_FILLED
-                    return (
-                      <div key={i} className={s.st}>
-                        <svg viewBox="0 0 100 100">
-                          <polygon
-                            points="50,12 83,31 83,69 50,88 17,69 17,31"
-                            fill={filled ? '#F2A33C' : 'none'}
-                            stroke={filled ? '#F2A33C' : '#E3D9C6'}
-                            strokeWidth="9"
-                            strokeLinejoin="round"
-                          />
-                          {filled && <circle cx="50" cy="50" r="10" fill="#FFFDF8" />}
-                        </svg>
-                      </div>
-                    )
-                  })}
-                </div>
-                <div className={s.reward}>კიდევ 2 ყავა — და ერთი საჩუქრად 🎁</div>
-              </div>
-            </div>
+            <HeroWalletDemo />
           </div>
         </div>
       </div>
