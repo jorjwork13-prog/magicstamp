@@ -68,7 +68,7 @@ export default function DemoClient() {
             <p className="text-[15px] leading-relaxed text-ink">
               <strong>კარგია, რომ დაინტერესდი.</strong>{' '}
               <span className="text-[#6E5F49]">
-                აქ ნახავ, როგორი იქნება შენი ლოიალობის ბარათი.
+                აქ ნახავ, როგორი იქნება შენი ლოიალობის ბარათი — შენთვის და შენი კლიენტისთვის.
               </span>
             </p>
           </div>
@@ -134,13 +134,15 @@ export default function DemoClient() {
             <div className="bg-cream2 border border-line rounded-[14px] px-4 py-3.5 flex gap-3 items-center">
               <HexFilled hole="#FFFDF8" />
               <p className="text-sm leading-normal text-ink">
-                <strong>ბარათი მის ტელეფონშია</strong> — ვერ დაკარგავს, ყოველთვის ხედავს ბრენდს.
+                <strong>ბარათი მის ტელეფონშია</strong> — ვერ დაკარგავს. ყოველ გადახდაზე შენს
+                ბრენდს ხედავს.
               </p>
             </div>
             <div className="bg-cream2 border border-line rounded-[14px] px-4 py-3.5 flex gap-3 items-center">
               <HexOutline />
               <p className="text-sm leading-normal text-ink">
-                <strong>ხედავს, რამდენი დარჩა ჯილდომდე</strong> — „კიდევ 3 ყავა“. ეს აბრუნებს.
+                <strong>ხედავს, რამდენი დარჩა ჯილდომდე</strong> — „კიდევ 3 ყავა“ — ეს აიძულებს
+                დაბრუნებას.
               </p>
             </div>
           </div>
@@ -150,7 +152,7 @@ export default function DemoClient() {
         <div className="pt-10 px-5 flex flex-col gap-4">
           <SectionLabel>რას ხედავ შენ</SectionLabel>
           <p className="text-[15px] leading-relaxed text-[#6E5F49]">
-            პირველად გეცოდინება, ვინ არიან შენი მუდმივი კლიენტები.
+            პირველად გეცოდინება, ვინ არიან შენი მუდმივი კლიენტები — სახელით და ვიზიტებით.
           </p>
           <div className="bg-ink rounded-[18px] px-[18px] pt-[18px] pb-4 flex flex-col gap-3.5 shadow-[0_18px_36px_rgba(43,33,24,0.25)]">
             <div className="flex items-center justify-between">
