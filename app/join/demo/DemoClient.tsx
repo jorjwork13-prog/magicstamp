@@ -16,7 +16,7 @@ const COMPARE_ROWS = [
   { label: 'კლიენტი ბრუნდება?', none: 'შემთხვევით', paper: 'ხანდახან', taply: 'მიზეზი აქვს' },
   { label: 'ბარათი იკარგება?', none: '—', paper: 'მუდმივად', taply: 'ვერ დაკარგავს' },
   { label: 'ბეჭდვის ხარჯი', none: '₾0', paper: '₾200+ წელიწადში', taply: '₾0' },
-  { label: 'ვინ ბრუნდება — იცი?', none: 'არა', paper: 'არა', taply: 'ხედავ ყველას' },
+  { label: 'ვინ ბრუნდება, იცი?', none: 'არა', paper: 'არა', taply: 'ხედავ ყველას' },
   { label: 'დაყენება', none: '—', paper: 'ბეჭდვა და დარიგება', taply: '2 წუთი' },
   { label: 'კლიენტს რა სჭირდება', none: '—', paper: 'ბარათი თან იქონიოს', taply: 'მხოლოდ ტელეფონი' },
 ]
@@ -68,7 +68,7 @@ export default function DemoClient() {
             <p className="text-[15px] leading-relaxed text-ink">
               <strong>კარგია, რომ დაინტერესდი.</strong>{' '}
               <span className="text-[#6E5F49]">
-                აქ ნახავ, როგორი იქნება შენი ლოიალობის ბარათი — შენთვის და შენი კლიენტისთვის.
+                აქ ნახავ, როგორი იქნება შენი ლოიალობის ბარათი, შენთვის და შენი კლიენტისთვის.
               </span>
             </p>
           </div>
@@ -123,7 +123,7 @@ export default function DemoClient() {
             })}
           </div>
           <div className="text-center text-xs text-muted">
-            ფერი, ლოგო და ჯილდო — ყველაფერი შენს ბრენდზე ეწყობა
+            ფერი, ლოგო და ჯილდო, ყველაფერი შენს ბრენდზე ეწყობა
           </div>
         </div>
 
@@ -134,14 +134,14 @@ export default function DemoClient() {
             <div className="bg-cream2 border border-line rounded-[14px] px-4 py-3.5 flex gap-3 items-center">
               <HexFilled hole="#FFFDF8" />
               <p className="text-sm leading-normal text-ink">
-                <strong>ბარათი მის ტელეფონშია</strong> — ვერ დაკარგავს. ყოველ გადახდაზე შენს
+                <strong>ბარათი მის ტელეფონშია</strong>, ვერ დაკარგავს. ყოველ გადახდაზე შენს
                 ბრენდს ხედავს.
               </p>
             </div>
             <div className="bg-cream2 border border-line rounded-[14px] px-4 py-3.5 flex gap-3 items-center">
               <HexOutline />
               <p className="text-sm leading-normal text-ink">
-                <strong>ხედავს, რამდენი დარჩა ჯილდომდე</strong> — „კიდევ 3 ყავა“ — ეს აიძულებს
+                <strong>ხედავს, რამდენი დარჩა ჯილდომდე</strong>, „კიდევ 3 ყავა“, ეს აიძულებს
                 დაბრუნებას.
               </p>
             </div>
@@ -152,11 +152,11 @@ export default function DemoClient() {
         <div className="pt-10 px-5 flex flex-col gap-4">
           <SectionLabel>რას ხედავ შენ</SectionLabel>
           <p className="text-[15px] leading-relaxed text-[#6E5F49]">
-            პირველად გეცოდინება, ვინ არიან შენი მუდმივი კლიენტები — სახელით და ვიზიტებით.
+            პირველად გეცოდინება, ვინ არიან შენი მუდმივი კლიენტები, სახელით და ვიზიტებით.
           </p>
           <div className="bg-ink rounded-[18px] px-[18px] pt-[18px] pb-4 flex flex-col gap-3.5 shadow-[0_18px_36px_rgba(43,33,24,0.25)]">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] font-bold text-cream">კაფე ვერა — ეს თვე</span>
+              <span className="text-[13px] font-bold text-cream">კაფე ვერა, ეს თვე</span>
               <span className="font-mono text-[10px] text-[#7A6C55]">TAPLY DASHBOARD</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -175,7 +175,7 @@ export default function DemoClient() {
               {[
                 { name: 'ნინო კ.', note: '9/10 · ხვალ-ზეგ დაბრუნდება', warn: false },
                 { name: 'გიორგი მ.', note: 'კვირაში 4-ჯერ · შენი მუდმივი', warn: false },
-                { name: 'თამარ ბ.', note: '2 კვირაა არ ჩანს — შეახსენე', warn: true },
+                { name: 'თამარ ბ.', note: '2 კვირაა არ ჩანს, შეახსენე', warn: true },
               ].map((m) => (
                 <div key={m.name} className="flex items-center justify-between bg-[#342917] rounded-[10px] px-3 py-2">
                   <span className="text-[13px] font-semibold text-cream">{m.name}</span>
@@ -249,7 +249,7 @@ export default function DemoClient() {
               <div className="flex gap-2.5 items-center">
                 <span className="w-2 h-2 bg-ink rounded-full shrink-0" />
                 <span className="text-[15px] font-semibold text-ink">
-                  შემდეგ <span className="font-mono text-[19px] font-bold">₾69</span>/თვე სამუდამოდ —{' '}
+                  შემდეგ <span className="font-mono text-[19px] font-bold">₾69</span>/თვე სამუდამოდ,{' '}
                   <s className="opacity-55">₾99</s>-ის ნაცვლად
                 </span>
               </div>
@@ -263,7 +263,7 @@ export default function DemoClient() {
         {/* 7 · closing CTAs */}
         <div className="pt-10 px-5 pb-3 flex flex-col gap-3.5">
           <p className="text-center text-[15px] font-semibold text-[#6E5F49] leading-normal">
-            ორ წუთში დაყენდება — შენს ნაცვლად მე გავაკეთებ.
+            ორ წუთში დაყენდება, შენს ნაცვლად მე გავაკეთებ.
           </p>
           <Link
             href="/register"

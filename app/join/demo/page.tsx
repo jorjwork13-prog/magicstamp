@@ -4,7 +4,7 @@ import DemoClient from './DemoClient'
 export const metadata: Metadata = {
   title: 'Taply — შენი ბარათი, ტელეფონში',
   description:
-    'ნახე, როგორი იქნება შენი ლოიალობის ბარათი — შენთვის და შენი კლიენტისთვის.',
+    'ნახე, როგორი იქნება შენი ლოიალობის ბარათი, შენთვის და შენი კლიენტისთვის.',
 }
 
 /* Conversion showcase scanned from business cards / Instagram bio.
