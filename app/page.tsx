@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import TaplyLogo from '@/components/TaplyLogo'
 import HeroBees from '@/components/HeroBees'
+import PricingSection from '@/components/PricingSection'
 import s from './page.module.css'
 
 const STAMP_TOTAL = 10
@@ -37,12 +38,6 @@ const STEPS = [
     title: 'სავსე ბარათი = ჯილდო',
     text: 'კლიენტი ბრუნდება. ყოველთვის.',
   },
-]
-
-const PLANS = [
-  { name: 'Starter', price: '₾99', hot: false },
-  { name: 'Growth', price: '₾189', hot: true },
-  { name: 'Pro', price: '₾229', hot: false },
 ]
 
 export default function HomePage() {
@@ -181,23 +176,7 @@ export default function HomePage() {
       </section>
 
       {/* ---------- PRICING ---------- */}
-      <section className={s.section} id="pricing">
-        <h2 className={s.secT}>ფასები</h2>
-        <div className={s.price}>
-          {PLANS.map((plan) => (
-            <div key={plan.name} className={`${s.pl} ${plan.hot ? s.plHot : ''}`}>
-              <div className={s.nm}>{plan.name}</div>
-              <div className={s.pr}>
-                {plan.price}
-                <small>/თვე</small>
-              </div>
-              <Link className={plan.hot ? s.cta : s.cta2} href="/register">
-                არჩევა
-              </Link>
-            </div>
-          ))}
-        </div>
-      </section>
+      <PricingSection />
 
       {/* ---------- FOUNDER ---------- */}
       <section className={s.section}>

@@ -268,10 +268,30 @@
   border-radius: 16px;
   padding: 26px 22px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
 }
 .plHot {
   border: 2px solid var(--honey);
   position: relative;
+}
+.plBadge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--cream);
+  color: var(--comb);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 14px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.plSub {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 2px;
 }
 .nm {
   font-weight: 700;
@@ -287,6 +307,68 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--muted);
+}
+.plFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 18px;
+  font-size: 13px;
+  color: #6e5f49;
+  line-height: 2;
+  flex: 1;
+  text-align: left;
+}
+.plSlider {
+  width: 100%;
+  accent-color: var(--honey);
+  margin-bottom: 4px;
+}
+.plSliderLabel {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+/* ---------- PRICING: period toggle + founder banner ---------- */
+.periodToggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.periodTrack {
+  display: inline-flex;
+  background: var(--cream);
+  border-radius: 99px;
+  padding: 4px;
+  gap: 2px;
+}
+.periodBtn {
+  border: none;
+  background: transparent;
+  border-radius: 99px;
+  padding: 8px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--muted);
+}
+.periodBtnActive {
+  background: var(--cream2);
+  font-weight: 600;
+  color: var(--ink);
+}
+.founderBanner {
+  background: var(--cream);
+  border: 1px solid var(--honey);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 0 auto 24px;
+  max-width: 760px;
+  text-align: center;
+  font-size: 13px;
+  color: #6e5f49;
+}
+.founderBanner strong {
+  color: var(--ink);
 }
 /* ---------- FOUNDER ---------- */
 .founder {
