@@ -66,8 +66,19 @@ export default function JoinForm({
             ეს QR კოდი შეინახეთ — მაღაზია სტემპს ამ კოდით დაამატებს
           </p>
 
-          <div className="w-full">
+          <div className="w-full space-y-2">
             <WalletButton
+              memberId={state.memberId}
+              memberName={state.memberName ?? ''}
+              businessName={businessName}
+              businessId={businessId}
+              brandColor={brandColor ?? null}
+              logoUrl={logoUrl ?? null}
+              stampCount={earnedStamps}
+              maxStamps={maxStamps}
+              cardTheme={cardTheme}
+            />
+            <AppleWalletButton
               memberId={state.memberId}
               memberName={state.memberName ?? ''}
               businessName={businessName}
@@ -249,5 +260,43 @@ function WalletButton({ memberId, memberName, businessName, businessId, brandCol
       </button>
       {error && <p className="text-red-500 text-xs mt-2 text-center">{error}</p>}
     </div>
+  )
+}
+
+/**
+ * A real form POST rather than a fetch: the endpoint answers with the .pkpass
+ * binary, and letting Safari navigate to it is what makes iOS hand the pass
+ * straight to Wallet. A JS blob download is unreliable in in-app browsers.
+ */
+function AppleWalletButton({ memberId, memberName, businessName, businessId, brandColor, logoUrl, stampCount, maxStamps, cardTheme }: {
+  memberId: string
+  memberName: string
+  businessName: string
+  businessId: string
+  brandColor: string | null
+  logoUrl: string | null
+  stampCount: number
+  maxStamps: number
+  cardTheme: CardTheme
+}) {
+  return (
+    <form action="/api/wallet/apple" method="POST">
+      <input type="hidden" name="memberId" value={memberId} />
+      <input type="hidden" name="memberName" value={memberName} />
+      <input type="hidden" name="businessName" value={businessName} />
+      <input type="hidden" name="businessId" value={businessId} />
+      <input type="hidden" name="brandColor" value={brandColor ?? ''} />
+      <input type="hidden" name="logoUrl" value={logoUrl ?? ''} />
+      <input type="hidden" name="stampCount" value={stampCount} />
+      <input type="hidden" name="maxStamps" value={maxStamps} />
+      <input type="hidden" name="cardTheme" value={cardTheme} />
+      <button type="submit"
+        className="w-full flex items-center justify-center gap-2 bg-black text-white rounded-xl py-3 text-sm font-semibold hover:bg-gray-900 transition">
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="white" aria-hidden="true">
+          <path d="M16.36 12.73c-.02-2.02 1.65-2.99 1.73-3.04-.94-1.38-2.41-1.57-2.93-1.59-1.25-.13-2.44.73-3.07.73-.63 0-1.61-.71-2.65-.69-1.36.02-2.62.79-3.32 2.01-1.41 2.45-.36 6.08 1.02 8.07.67.97 1.48 2.07 2.53 2.03 1.02-.04 1.4-.66 2.63-.66s1.58.66 2.65.64c1.09-.02 1.79-1 2.46-1.98.77-1.13 1.09-2.23 1.11-2.29-.02-.01-2.14-.82-2.16-3.25zM14.5 6.9c.56-.68.94-1.62.83-2.56-.81.03-1.79.54-2.36 1.21-.51.6-.96 1.56-.84 2.48.9.07 1.82-.46 2.37-1.13z"/>
+        </svg>
+        Apple Wallet-ში დამატება
+      </button>
+    </form>
   )
 }
