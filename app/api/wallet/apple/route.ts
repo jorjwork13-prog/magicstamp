@@ -4,7 +4,8 @@ import path from 'node:path'
 import sharp from 'sharp'
 import { PKPass } from 'passkit-generator'
 import { loadPassCertificates } from '@/lib/apple-pass-certs'
-import { WALLET_HEX, isCardTheme } from '@/lib/card-themes'
+import { CARD_THEME_SPECS, isCardTheme, type CardTheme } from '@/lib/card-themes'
+import { paletteFor, renderStampPng } from '@/lib/stamp-graphic'
 
 // node-forge, sharp and fs — this route cannot run on the edge runtime.
 export const runtime = 'nodejs'
@@ -40,17 +41,49 @@ function linearize(c: number): number {
 }
 
 /**
- * Pick readable text for the chosen background. The `cream` theme is very
- * light, so a hardcoded white foreground would make the pass unreadable.
- * Threshold matches the one in /api/stamp-image.
+ * Pass chrome taken from the card theme the customer already saw on the join
+ * page, rather than from the single flat WALLET_HEX. Without a theme we fall
+ * back to the brand colour and pick readable text by luminance — the `cream`
+ * theme is light enough that a hardcoded white foreground would be unreadable.
  */
-function foregroundFor(hex: string): { foregroundColor: string; labelColor: string } {
-  const { r, g, b } = hexToRgbTriplet(hex)
+function passColors(theme: unknown, fallbackHex: string): {
+  backgroundColor: string
+  foregroundColor: string
+  labelColor: string
+  stripColor: string
+} {
+  if (isCardTheme(theme)) {
+    const t = CARD_THEME_SPECS[theme as CardTheme]
+    return {
+      backgroundColor: toPassColor(t.cardBg),
+      foregroundColor: toPassColor(t.headerText),
+      labelColor:      toPassColor(t.headerMuted),
+      stripColor:      toPassColor(t.cardBg),
+    }
+  }
+
+  const { r, g, b } = hexToRgbTriplet(fallbackHex)
   const lum = 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b)
   return lum > 0.4
-    ? { foregroundColor: 'rgb(26, 26, 26)', labelColor: 'rgb(110, 95, 73)' }
-    : { foregroundColor: 'rgb(255, 255, 255)', labelColor: 'rgb(220, 220, 220)' }
+    ? {
+        backgroundColor: toPassColor(fallbackHex),
+        foregroundColor: 'rgb(26, 26, 26)',
+        labelColor:      'rgb(110, 95, 73)',
+        stripColor:      toPassColor(fallbackHex),
+      }
+    : {
+        backgroundColor: toPassColor(fallbackHex),
+        foregroundColor: 'rgb(255, 255, 255)',
+        labelColor:      'rgb(220, 220, 220)',
+        stripColor:      toPassColor(fallbackHex),
+      }
 }
+
+// Apple's storeCard strip, in points and at @2x. The honeycomb is the only
+// thing on it, so the customer reads their progress from the graphic instead
+// of from a number.
+const STRIP_W = 375
+const STRIP_H = 144
 
 // ── Pass images ─────────────────────────────────────────────────────────────
 // Apple refuses to open a pass that has no icon.png, so the bundled Taply mark
@@ -143,15 +176,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'memberId and businessId are required' }, { status: 400 })
   }
 
-  const hexColor    = validHex(brandColor)
-  // card_theme drives the pass background; brand color remains the fallback
-  const passBgColor = isCardTheme(cardTheme) ? WALLET_HEX[cardTheme] : hexColor
+  const hexColor = validHex(brandColor)
+  const colors   = passColors(cardTheme, hexColor)
+  const palette  = paletteFor(cardTheme, hexColor)
 
   try {
-    const [certificates, icons, logo] = await Promise.all([
+    const [certificates, icons, logo, strip, strip2x] = await Promise.all([
       loadPassCertificates(),
       loadIcons(),
       fetchLogo(logoUrl),
+      renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W,     height: STRIP_H,     palette }),
+      renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W * 2, height: STRIP_H * 2, palette }),
     ])
 
     const pass = new PKPass({}, certificates, {
@@ -162,17 +197,13 @@ export async function POST(req: NextRequest) {
       // Unique per member per business, mirroring the Google object id.
       serialNumber:         `${businessId}.${memberId}`,
       logoText:             business,
-      backgroundColor:      toPassColor(passBgColor),
-      ...foregroundFor(passBgColor),
+      ...colors,
     })
 
     pass.type = 'storeCard'
 
-    pass.primaryFields.push({
-      key:   'stamps',
-      label: 'სტემპი',
-      value: `${stampCount}/${maxStamps}`,
-    })
+    // No primary field on purpose: it would render on top of the strip and
+    // repeat what the honeycomb already shows. The graphic carries the count.
 
     pass.secondaryFields.push(
       { key: 'member', label: 'მფლობელი', value: memberName || '—' },
@@ -196,6 +227,8 @@ export async function POST(req: NextRequest) {
 
     pass.addBuffer('icon.png', icons.icon)
     pass.addBuffer('icon@2x.png', icons.icon2x)
+    pass.addBuffer('strip.png', strip)
+    pass.addBuffer('strip@2x.png', strip2x)
     if (logo) {
       pass.addBuffer('logo.png', logo)
       pass.addBuffer('logo@2x.png', logo)
