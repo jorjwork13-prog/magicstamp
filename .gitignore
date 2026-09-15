@@ -41,3 +41,10 @@ yarn-error.log*
 next-env.d.ts
 # Google Wallet Service Account Key
 google-wallet-key.json
+
+# Apple Wallet certificates, private keys & signing material — never commit
+/certs/
+*.p12
+*.cer
+*.csr
+p12-password.txt
