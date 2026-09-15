@@ -171,7 +171,7 @@ export async function POST(req: NextRequest) {
     pass.primaryFields.push({
       key:   'stamps',
       label: 'სტემპი',
-      value: `${stampCount}/${maxStamps} სტემპი`,
+      value: `${stampCount}/${maxStamps}`,
     })
 
     pass.secondaryFields.push(
@@ -190,7 +190,8 @@ export async function POST(req: NextRequest) {
       format:          'PKBarcodeFormatQR',
       message:         memberId,
       messageEncoding: 'iso-8859-1',
-      altText:         memberId,
+      // No altText: it would print the raw member UUID under the QR, which
+      // means nothing to the customer. The QR still encodes memberId.
     })
 
     pass.addBuffer('icon.png', icons.icon)
