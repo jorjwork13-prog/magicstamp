@@ -202,12 +202,23 @@ export async function POST(req: NextRequest) {
 
     pass.type = 'storeCard'
 
-    // No primary field on purpose: it would render on top of the strip and
-    // repeat what the honeycomb already shows. The graphic carries the count.
+    // The real card (WalletPassCard) shows a "პროგრესი  N / M" row directly
+    // above the hexagon grid. Apple renders a primary field directly above
+    // the strip image, which is the same layout order — so this is the one
+    // native field that should carry the count, matching the card exactly
+    // instead of leaving the honeycomb to carry it alone.
+    pass.primaryFields.push(
+      { key: 'progress', label: 'პროგრესი', value: `${stampCount} / ${maxStamps}` },
+    )
+
+    const remaining = Math.max(0, maxStamps - stampCount)
+    const rewardText = remaining > 0
+      ? `კიდევ ${remaining} ვიზიტი — და ერთი საჩუქრად`
+      : 'ბარათი სავსეა — მიიღე საჩუქარი'
 
     pass.secondaryFields.push(
       { key: 'member', label: 'მფლობელი', value: memberName || '—' },
-      { key: 'reward', label: 'ჯილდო',    value: `უფასო ყავა ${maxStamps} სტემპის შემდეგ` },
+      { key: 'reward', label: 'ჯილდო',    value: rewardText },
     )
 
     pass.backFields.push(
