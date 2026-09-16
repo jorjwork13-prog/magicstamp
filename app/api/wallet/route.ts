@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
   const passBgColor = isCardTheme(cardTheme) ? WALLET_HEX[cardTheme] : hexColor
   const classId     = `${ISSUER_ID}.magicstamp_loyalty_${businessId}`
   const cleanLogo   = cleanUrl(logoUrl)
+  const remaining   = Math.max(0, maxStamps - stampCount)
 
   // ── Upsert the per-business loyalty class ──────────────────────────────────
   const auth = new google.auth.GoogleAuth({
@@ -87,7 +88,9 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Build the loyalty object JWT ───────────────────────────────────────────
-  const stampImageUrl = `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(hexColor)}&count=${stampCount}&max=${maxStamps}`
+  // Same color the loyalty class's hexBackgroundColor uses, so the hero image
+  // background matches the pass chrome instead of always showing brandColor.
+  const stampImageUrl = `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(passBgColor)}&count=${stampCount}&max=${maxStamps}`
 
   const loyaltyObject = {
     id:          `${classId}.${memberId}`,
@@ -112,7 +115,9 @@ export async function POST(req: NextRequest) {
       },
       {
         header: 'ჯილდო',
-        body:   `უფასო ყავა ${maxStamps} სტემპის შემდეგ`,
+        body:   remaining > 0
+          ? `კიდევ ${remaining} ვიზიტი — და ერთი საჩუქრად`
+          : 'ბარათი სავსეა — მიიღე საჩუქარი',
         id:     'reward',
       },
     ],
