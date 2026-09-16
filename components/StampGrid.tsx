@@ -75,7 +75,7 @@ export default function StampGrid({
                       backgroundColor: filled && fillColor ? fillColor : undefined,
                       borderColor: !filled && emptyColor ? emptyColor : undefined,
                       animation: isNew
-                        ? 'stamp-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) both'
+                        ? 'stamp-pop 0.35s cubic-bezier(0.16,1,0.3,1) both'
                         : undefined,
                     }}
                     className={
