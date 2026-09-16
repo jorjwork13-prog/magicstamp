@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import TaplyLogo from '@/components/TaplyLogo'
 import HeroBees from '@/components/HeroBees'
+import PricingSection from '@/components/PricingSection'
 import s from './page.module.css'
 
 const STAMP_TOTAL = 10
@@ -9,7 +10,7 @@ const STAMP_FILLED = 8
 const STORY = [
   {
     title: 'ქაღალდის ბარათი იკარგება',
-    text: 'ჯიბეში ირეცხება, სახლში რჩება, ნაგავში ხვდება. კლიენტი კი — აღარ ბრუნდება.',
+    text: 'ჯიბეში ირეცხება, სახლში რჩება, ნაგავში ხვდება. კლიენტი კი, აღარ ბრუნდება.',
   },
   {
     title: 'Taply ტელეფონში ცხოვრობს',
@@ -17,7 +18,7 @@ const STORY = [
   },
   {
     title: 'კლიენტი ბრუნდება',
-    text: 'ის ხედავს: კიდევ 2 ყავა — და საჩუქარი. დაბრუნების მიზეზი ყოველთვის თან აქვს.',
+    text: 'ის ხედავს: კიდევ 2 ყავა, და საჩუქარი. დაბრუნების მიზეზი ყოველთვის თან აქვს.',
   },
 ]
 
@@ -25,11 +26,11 @@ const STEPS = [
   {
     n: 1,
     title: 'კლიენტი QR-ს ასკანერებს',
-    text: 'ერთხელ — და ბარათი უკვე მის Wallet-შია',
+    text: 'ერთხელ, და ბარათი უკვე მის Wallet-შია',
   },
   {
     n: 2,
-    title: 'ყოველ ვიზიტზე — სტემპი',
+    title: 'ყოველ ვიზიტზე, სტემპი',
     text: 'შენ ასკანერებ, ბარათი თავისით ახლდება',
   },
   {
@@ -37,12 +38,6 @@ const STEPS = [
     title: 'სავსე ბარათი = ჯილდო',
     text: 'კლიენტი ბრუნდება. ყოველთვის.',
   },
-]
-
-const PLANS = [
-  { name: 'Starter', price: '₾99', hot: false },
-  { name: 'Growth', price: '₾189', hot: true },
-  { name: 'Pro', price: '₾229', hot: false },
 ]
 
 export default function HomePage() {
@@ -71,7 +66,7 @@ export default function HomePage() {
               დაბრუნების <em>მიზეზი</em>
             </h1>
             <p className={s.sub}>
-              ციფრული ლოიალობის ბარათი, რომელიც კლიენტის ტელეფონში ცხოვრობს —
+              ციფრული ლოიალობის ბარათი, რომელიც კლიენტის ტელეფონში ცხოვრობს,
               Apple და Google Wallet-ში. ქაღალდი აღარ იკარგება.
             </p>
             <div className={s.ctaRow}>
@@ -109,7 +104,7 @@ export default function HomePage() {
                     )
                   })}
                 </div>
-                <div className={s.reward}>კიდევ 2 ყავა — და ერთი საჩუქრად 🎁</div>
+                <div className={s.reward}>კიდევ 2 ყავა, და ერთი საჩუქრად 🎁</div>
               </div>
             </div>
           </div>
@@ -181,23 +176,7 @@ export default function HomePage() {
       </section>
 
       {/* ---------- PRICING ---------- */}
-      <section className={s.section} id="pricing">
-        <h2 className={s.secT}>ფასები</h2>
-        <div className={s.price}>
-          {PLANS.map((plan) => (
-            <div key={plan.name} className={`${s.pl} ${plan.hot ? s.plHot : ''}`}>
-              <div className={s.nm}>{plan.name}</div>
-              <div className={s.pr}>
-                {plan.price}
-                <small>/თვე</small>
-              </div>
-              <Link className={plan.hot ? s.cta : s.cta2} href="/register">
-                არჩევა
-              </Link>
-            </div>
-          ))}
-        </div>
-      </section>
+      <PricingSection />
 
       {/* ---------- FOUNDER ---------- */}
       <section className={s.section}>
@@ -209,7 +188,7 @@ export default function HomePage() {
           </div>
           <div className={s.founderTxt}>
             <p>
-              გამარჯობა, მე გიორგი ვარ. Taply-ს თბილისში ვაშენებ — იმ კაფეებისა
+              გამარჯობა, მე გიორგი ვარ. Taply-ს თბილისში ვაშენებ, იმ კაფეებისა
               და სალონებისთვის, რომლებიც ჩვენს უბნებს აცოცხლებენ. თუ კითხვა
               გაქვს, პირადად მომწერე.
             </p>
