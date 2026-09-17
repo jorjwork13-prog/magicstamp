@@ -4,6 +4,10 @@ import { isCardTheme } from '@/lib/card-themes'
 import { selectBusinessWithTheme } from '@/lib/business-select'
 import JoinForm from './JoinForm'
 
+// The business is looked up per request, and a 404 here must never be reused
+// for a URL that later works (see the Cache-Control header in proxy.ts).
+export const dynamic = 'force-dynamic'
+
 export default async function JoinPage({
   params,
 }: {
