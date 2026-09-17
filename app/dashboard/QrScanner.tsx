@@ -263,7 +263,7 @@ export default function QrScanner({
             /* ── REWARD: full celebration card ── */
             <div
               className="w-full max-w-sm bg-amber-50 border-2 border-amber-300 rounded-2xl px-6 py-6 text-center"
-              style={{ animation: 'qs-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) both, qs-shimmer 1.2s ease-in-out 0.4s 2' }}
+              style={{ animation: 'qs-pop 0.4s cubic-bezier(0.16,1,0.3,1) both, qs-shimmer 1.2s ease-in-out 0.4s 2' }}
             >
               {/* Confetti + bouncing emoji */}
               <div style={{ position: 'relative', display: 'inline-block', marginBottom: 12 }}>
@@ -284,21 +284,21 @@ export default function QrScanner({
                     } as React.CSSProperties}
                   />
                 ))}
-                <span style={{ fontSize: 52, lineHeight: 1, display: 'block', animation: 'qs-celebrate 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.05s both' }}>
+                <span style={{ fontSize: 52, lineHeight: 1, display: 'block', animation: 'qs-celebrate 0.65s cubic-bezier(0.16,1,0.3,1) 0.05s both' }}>
                   🎉
                 </span>
               </div>
 
               <p
                 className="font-bold text-amber-800 text-xl truncate"
-                style={{ animation: 'qs-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) 0.2s both' }}
+                style={{ animation: 'qs-pop 0.35s cubic-bezier(0.16,1,0.3,1) 0.2s both' }}
               >
                 {result.name}
               </p>
-              <p className="text-sm text-amber-700 mt-1" style={{ animation: 'qs-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) 0.3s both' }}>
+              <p className="text-sm text-amber-700 mt-1" style={{ animation: 'qs-pop 0.35s cubic-bezier(0.16,1,0.3,1) 0.3s both' }}>
                 ბარათი შევსებულია!
               </p>
-              <p className="text-base font-medium text-amber-600 mt-1" style={{ animation: 'qs-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) 0.38s both' }}>
+              <p className="text-base font-medium text-amber-600 mt-1" style={{ animation: 'qs-pop 0.35s cubic-bezier(0.16,1,0.3,1) 0.38s both' }}>
                 🎁 დაასაჩუქრეთ კლიენტი
               </p>
             </div>
@@ -306,13 +306,13 @@ export default function QrScanner({
             /* ── NORMAL STAMP: green card with stamp grid ── */
             <div
               className="w-full max-w-sm bg-green-50 border border-green-200 rounded-xl px-5 py-4"
-              style={{ animation: 'qs-pop 0.38s cubic-bezier(0.34,1.56,0.64,1) both' }}
+              style={{ animation: 'qs-pop 0.38s cubic-bezier(0.16,1,0.3,1) both' }}
             >
               {/* Header: ✓ icon + name */}
               <div className="flex items-center gap-3 mb-4">
                 <div
                   className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center text-white font-bold shrink-0"
-                  style={{ animation: 'qs-check 0.42s cubic-bezier(0.34,1.56,0.64,1) 0.06s both' }}
+                  style={{ animation: 'qs-check 0.42s cubic-bezier(0.16,1,0.3,1) 0.06s both' }}
                 >
                   ✓
                 </div>
@@ -323,7 +323,7 @@ export default function QrScanner({
               </div>
 
               {/* Stamp circles — the new stamp pops in */}
-              <div style={{ animation: 'qs-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) 0.12s both' }}>
+              <div style={{ animation: 'qs-pop 0.35s cubic-bezier(0.16,1,0.3,1) 0.12s both' }}>
                 <StampGrid
                   count={result.stamp_count}
                   max={maxStamps}
