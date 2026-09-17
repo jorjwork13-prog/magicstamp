@@ -34,6 +34,15 @@ export default async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
+  // Safari has been seen caching a 404 from /join/{businessId} and serving it
+  // even after the business resolves again (same URL failed in a normal tab,
+  // worked in Private mode). A page.tsx Server Component can't set response
+  // headers, and notFound() doesn't either, so the header goes on here.
+  // /join/demo is a static marketing page with no lookup — leave it cacheable.
+  if (path.startsWith('/join/') && path !== '/join/demo') {
+    response.headers.set('Cache-Control', 'no-store, must-revalidate')
+  }
+
   return response
 }
 
