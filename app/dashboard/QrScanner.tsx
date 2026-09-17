@@ -142,6 +142,14 @@ export default function QrScanner({
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ memberId: decoded, stampCount: countToSave, maxStamps, businessId, brandColor, cardTheme }),
           })
+
+          // Phase 2, behind WALLET_APNS_PUSH_ENABLED — a no-op response
+          // while the flag is off. See app/api/wallet/apple/notify/route.ts.
+          fetch('/api/wallet/apple/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ memberId: decoded, businessId }),
+          })
         },
         () => {}
       ).catch(() => {
