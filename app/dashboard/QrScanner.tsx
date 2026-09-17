@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import StampGrid from '@/components/StampGrid'
+import type { CardTheme } from '@/lib/card-themes'
 
 type ScanResult = { name: string; stamp_count: number; rewarded?: boolean }
 type Mode = 'idle' | 'scanning' | 'result'
@@ -29,10 +30,12 @@ export default function QrScanner({
   businessId,
   maxStamps,
   brandColor,
+  cardTheme,
 }: {
   businessId: string
   maxStamps: number
   brandColor: string | null
+  cardTheme: CardTheme | null
 }) {
   const router = useRouter()
 
@@ -137,7 +140,7 @@ export default function QrScanner({
           fetch('/api/wallet/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId: decoded, stampCount: countToSave, maxStamps, businessId, brandColor }),
+            body: JSON.stringify({ memberId: decoded, stampCount: countToSave, maxStamps, businessId, brandColor, cardTheme }),
           })
         },
         () => {}

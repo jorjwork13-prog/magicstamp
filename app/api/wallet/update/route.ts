@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { google } from 'googleapis'
+import { WALLET_HEX, isCardTheme } from '@/lib/card-themes'
 
 const ISSUER_ID        = '3388000000023159453'
 const SHARED_CLASS_ID  = `${ISSUER_ID}.magicstamp_loyalty`
@@ -11,7 +12,7 @@ function validHex(color: string | null | undefined): string {
 }
 
 export async function POST(req: NextRequest) {
-  const { memberId, stampCount, maxStamps, businessId, brandColor } = await req.json()
+  const { memberId, stampCount, maxStamps, businessId, brandColor, cardTheme } = await req.json()
 
   const credentials = JSON.parse(process.env.GOOGLE_WALLET_CREDENTIALS!)
 
@@ -21,8 +22,11 @@ export async function POST(req: NextRequest) {
   })
   const walletobjects = google.walletobjects({ version: 'v1', auth })
 
-  const hexColor      = validHex(brandColor)
-  const stampImageUrl = `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(hexColor)}&count=${stampCount}&max=${maxStamps}`
+  // Same hero URL shape as pass creation (/api/wallet), so a scan doesn't swap
+  // the themed image for a brand-colour one.
+  const hexColor      = isCardTheme(cardTheme) ? WALLET_HEX[cardTheme] : validHex(brandColor)
+  const themeParam    = isCardTheme(cardTheme) ? `&theme=${cardTheme}` : ''
+  const stampImageUrl = `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(hexColor)}&count=${stampCount}&max=${maxStamps}${themeParam}`
 
   const patchBody = {
     heroImage: {

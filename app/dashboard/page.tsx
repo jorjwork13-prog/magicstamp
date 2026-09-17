@@ -36,7 +36,12 @@ export default async function DashboardPage() {
         {/* QR Scanner */}
         <section className="bg-dbg2 rounded-2xl shadow-sm border border-dline p-6">
           <h2 className="text-base font-semibold text-dtext mb-5">სკანირება</h2>
-          <QrScanner businessId={business.id} maxStamps={business.max_stamps} brandColor={business.brand_color ?? null} />
+          <QrScanner
+            businessId={business.id}
+            maxStamps={business.max_stamps}
+            brandColor={business.brand_color ?? null}
+            cardTheme={isCardTheme(business.card_theme) ? business.card_theme : null}
+          />
         </section>
 
         {/* Members table */}

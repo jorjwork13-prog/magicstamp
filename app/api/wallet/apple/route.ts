@@ -79,11 +79,11 @@ function passColors(theme: unknown, fallbackHex: string): {
       }
 }
 
-// Apple's storeCard strip, in points and at @2x. The honeycomb is the only
-// thing on it, so the customer reads their progress from the graphic instead
-// of from a number.
+// Apple's storeCard strip in points (375x144 is the coupon/gift-card size),
+// rendered at @1x, @2x and @3x. The "პროგრესი N / M" row and the honeycomb are
+// both drawn into the image; see lib/stamp-graphic.ts.
 const STRIP_W = 375
-const STRIP_H = 144
+const STRIP_H = 123
 
 // ── Pass images ─────────────────────────────────────────────────────────────
 // Apple refuses to open a pass that has no icon.png, so the bundled Taply mark
@@ -181,12 +181,13 @@ export async function POST(req: NextRequest) {
   const palette  = paletteFor(cardTheme, hexColor)
 
   try {
-    const [certificates, icons, logo, strip, strip2x] = await Promise.all([
+    const [certificates, icons, logo, strip, strip2x, strip3x] = await Promise.all([
       loadPassCertificates(),
       loadIcons(),
       fetchLogo(logoUrl),
       renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W,     height: STRIP_H,     palette }),
       renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W * 2, height: STRIP_H * 2, palette }),
+      renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W * 3, height: STRIP_H * 3, palette }),
     ])
 
     const pass = new PKPass({}, certificates, {
@@ -202,12 +203,18 @@ export async function POST(req: NextRequest) {
 
     pass.type = 'storeCard'
 
-    // No primary field on purpose: it would render on top of the strip and
-    // repeat what the honeycomb already shows. The graphic carries the count.
+    // No primary field on purpose: in a storeCard it renders on top of the
+    // strip and collides with the hexagons. The progress row is drawn into
+    // the strip image instead.
+
+    const remaining  = Math.max(0, maxStamps - stampCount)
+    const rewardText = remaining > 0
+      ? `კიდევ ${remaining} ვიზიტი — და ერთი საჩუქრად`
+      : 'ბარათი სავსეა — მიიღე საჩუქარი'
 
     pass.secondaryFields.push(
       { key: 'member', label: 'მფლობელი', value: memberName || '—' },
-      { key: 'reward', label: 'ჯილდო',    value: `უფასო ყავა ${maxStamps} სტემპის შემდეგ` },
+      { key: 'reward', label: 'ჯილდო',    value: rewardText },
     )
 
     pass.backFields.push(
@@ -229,6 +236,7 @@ export async function POST(req: NextRequest) {
     pass.addBuffer('icon@2x.png', icons.icon2x)
     pass.addBuffer('strip.png', strip)
     pass.addBuffer('strip@2x.png', strip2x)
+    pass.addBuffer('strip@3x.png', strip3x)
     if (logo) {
       pass.addBuffer('logo.png', logo)
       pass.addBuffer('logo@2x.png', logo)
