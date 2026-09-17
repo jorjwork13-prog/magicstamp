@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import { Outfit, Noto_Sans_Georgian } from "next/font/google";
+import { Fredoka, Noto_Sans_Georgian } from "next/font/google";
 import "./globals.css";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+/* Fredoka carries no Georgian glyphs and tops out at 700 — Noto Sans
+   Georgian below is the next stack entry, so Georgian resolves there. */
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const notoGeorgian = Noto_Sans_Georgian({
@@ -49,7 +51,7 @@ export default function RootLayout({
   return (
     <html
       lang="ka"
-      className={`${outfit.variable} ${notoGeorgian.variable} h-full antialiased`}
+      className={`${fredoka.variable} ${notoGeorgian.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">

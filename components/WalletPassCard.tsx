@@ -77,7 +77,7 @@ export default function WalletPassCard({
         boxShadow: t.cardShadow,
         display: 'flex',
         flexDirection: 'column',
-        fontFamily: "'Outfit', 'Noto Sans Georgian', sans-serif",
+        fontFamily: 'var(--font-fredoka), var(--font-noto-georgian), sans-serif',
       }}
     >
       {/* header */}
