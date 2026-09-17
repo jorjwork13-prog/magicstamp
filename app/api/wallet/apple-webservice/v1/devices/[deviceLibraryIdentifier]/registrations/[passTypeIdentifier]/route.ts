@@ -22,7 +22,7 @@ type Params = {
  * deviceLibraryIdentifier alone.
  *
  * "Updated" is read off members.last_visit, which QrScanner.tsx already
- * bumps on every stamp (see supabase/migrations/005_wallet_push_tokens.sql)
+ * bumps on every stamp (see supabase/migrations/006_wallet_push_tokens.sql)
  * — no separate version/tag column was added for this.
  */
 export async function GET(req: NextRequest, { params }: Params) {

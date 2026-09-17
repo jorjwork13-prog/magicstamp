@@ -9,12 +9,16 @@
 -- (deviceLibraryIdentifier, passTypeIdentifier, serialNumber) — a phone can
 -- hold several passes, and in principle several phones could watch the same
 -- pass, so all three are part of the identity, not just the device.
-create table public.wallet_push_tokens (
+--
+-- Numbered 006 so it can't collide with 005_referrals.sql (feat/referrals);
+-- the two touch unrelated tables, so either can be applied first. IF NOT
+-- EXISTS guards make the file safe to re-run, like the other migrations.
+create table if not exists public.wallet_push_tokens (
   id                       uuid primary key default gen_random_uuid(),
   device_library_identifier text not null,
   pass_type_identifier      text not null,
   -- Matches PKPass.serialNumber, i.e. "{businessId}.{memberId}" — see
-  -- app/api/wallet/apple/route.ts.
+  -- lib/apple-pass-builder.ts.
   serial_number              text not null,
   push_token                 text not null,
   created_at                 timestamptz not null default now(),
@@ -22,7 +26,7 @@ create table public.wallet_push_tokens (
   unique (device_library_identifier, pass_type_identifier, serial_number)
 );
 
-create index wallet_push_tokens_serial_idx
+create index if not exists wallet_push_tokens_serial_idx
   on public.wallet_push_tokens (pass_type_identifier, serial_number);
 
 -- ─────────────────────────────────────────

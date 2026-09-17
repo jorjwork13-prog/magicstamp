@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isWalletPushEnabled } from '@/lib/wallet-push-flag'
 
 export const runtime = 'nodejs'
+
+/** A device's log batch is a few short lines; cap what an anonymous caller can write to our logs. */
+const MAX_LOG_CHARS = 4_000
 
 /**
  * POST /v1/log
@@ -12,9 +16,12 @@ export const runtime = 'nodejs'
  * stored yet.
  */
 export async function POST(req: NextRequest) {
+  // Same gate as the other webservice routes: no passes point here while off.
+  if (!isWalletPushEnabled()) return new NextResponse(null, { status: 200 })
+
   try {
     const body = await req.json()
-    console.log('WALLET_WEBSERVICE_DEVICE_LOG:', JSON.stringify(body?.logs ?? body))
+    console.log('WALLET_WEBSERVICE_DEVICE_LOG:', JSON.stringify(body?.logs ?? body).slice(0, MAX_LOG_CHARS))
   } catch {
     // Malformed body from a device isn't worth failing over.
   }

@@ -18,8 +18,11 @@ export const PASS_TYPE_IDENTIFIER = 'pass.ge.taply.loyalty'
 export const TEAM_IDENTIFIER      = 'SRYGT4Q4LY'
 export const ORGANIZATION_NAME    = 'Taply'
 
-// Same base path the scan flow and the join page already point at.
-export const WALLET_WEBSERVICE_URL = 'https://magicstamp.vercel.app/api/wallet/apple-webservice/v1'
+// Where a pass tells iOS to register and fetch updates. Defaults to
+// production; set WALLET_WEBSERVICE_URL on a preview deployment so a test pass
+// registers against that deployment's routes instead of production's.
+export const WALLET_WEBSERVICE_URL =
+  process.env.WALLET_WEBSERVICE_URL || 'https://magicstamp.vercel.app/api/wallet/apple-webservice/v1'
 
 /** Same fallback the Google Wallet route uses, so both passes agree on color. */
 function validHex(color: string | null | undefined): string {
@@ -86,11 +89,11 @@ function passColors(theme: unknown, fallbackHex: string): {
       }
 }
 
-// Apple's storeCard strip, in points and at @2x. The honeycomb is the only
-// thing on it, so the customer reads their progress from the graphic instead
-// of from a number.
+// Apple's storeCard strip in points (375x144 is the coupon/gift-card size),
+// rendered at @1x, @2x and @3x. The "პროგრესი N / M" row and the honeycomb are
+// both drawn into the image; see lib/stamp-graphic.ts.
 const STRIP_W = 375
-const STRIP_H = 144
+const STRIP_H = 123
 
 // ── Pass images ─────────────────────────────────────────────────────────────
 // Apple refuses to open a pass that has no icon.png, so the bundled Taply mark
@@ -173,12 +176,13 @@ export async function buildLoyaltyPass(input: BuildLoyaltyPassInput): Promise<PK
   const palette  = paletteFor(cardTheme, hexColor)
   const serialNumber = `${businessId}.${memberId}`
 
-  const [certificates, icons, logo, strip, strip2x] = await Promise.all([
+  const [certificates, icons, logo, strip, strip2x, strip3x] = await Promise.all([
     loadPassCertificates(),
     loadIcons(),
     fetchLogo(logoUrl),
     renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W,     height: STRIP_H,     palette }),
     renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W * 2, height: STRIP_H * 2, palette }),
+    renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W * 3, height: STRIP_H * 3, palette }),
   ])
 
   const pass = new PKPass({}, certificates, {
@@ -201,14 +205,9 @@ export async function buildLoyaltyPass(input: BuildLoyaltyPassInput): Promise<PK
 
   pass.type = 'storeCard'
 
-  // The real card (WalletPassCard) shows a "პროგრესი  N / M" row directly
-  // above the hexagon grid. Apple renders a primary field directly above
-  // the strip image, which is the same layout order — so this is the one
-  // native field that should carry the count, matching the card exactly
-  // instead of leaving the honeycomb to carry it alone.
-  pass.primaryFields.push(
-    { key: 'progress', label: 'პროგრესი', value: `${stampCount} / ${maxStamps}` },
-  )
+  // No primary field on purpose: in a storeCard it renders on top of the
+  // strip and collides with the hexagons. The progress row is drawn into
+  // the strip image instead.
 
   const remaining = Math.max(0, maxStamps - stampCount)
   const rewardText = remaining > 0
@@ -239,6 +238,7 @@ export async function buildLoyaltyPass(input: BuildLoyaltyPassInput): Promise<PK
   pass.addBuffer('icon@2x.png', icons.icon2x)
   pass.addBuffer('strip.png', strip)
   pass.addBuffer('strip@2x.png', strip2x)
+  pass.addBuffer('strip@3x.png', strip3x)
   if (logo) {
     pass.addBuffer('logo.png', logo)
     pass.addBuffer('logo@2x.png', logo)

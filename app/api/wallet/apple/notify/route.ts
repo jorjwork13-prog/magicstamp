@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseAdminClient } from '@/lib/supabase-admin'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { isWalletPushEnabled } from '@/lib/wallet-push-flag'
 import { sendPassUpdatePush } from '@/lib/apns-push'
 import { PASS_TYPE_IDENTIFIER } from '@/lib/apple-pass-builder'
@@ -25,6 +26,21 @@ export async function POST(req: NextRequest) {
   if (!memberId || !businessId) {
     return NextResponse.json({ error: 'memberId and businessId are required' }, { status: 400 })
   }
+
+  // Only the signed-in owner of this business may trigger pushes for its
+  // passes. Without this anyone could fire pushes at any member, and `sent`
+  // would reveal whether that member has the pass on an iPhone.
+  const session = await createSupabaseServerClient()
+  const { data: { user } } = await session.auth.getUser()
+  if (!user?.email) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+
+  const { data: owned } = await session
+    .from('businesses')
+    .select('id')
+    .eq('id', businessId)
+    .eq('email', user.email)
+    .maybeSingle()
+  if (!owned) return NextResponse.json({ error: 'forbidden' }, { status: 403 })
 
   const serialNumber = `${businessId}.${memberId}`
   const supabase = createSupabaseAdminClient()
