@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useActionState } from 'react'
 import Link from 'next/link'
 import { joinAction } from '@/app/actions/join'
-import StampGrid from '@/components/StampGrid'
 import WalletPassCard from '@/components/WalletPassCard'
 import type { CardTheme } from '@/lib/card-themes'
 
@@ -108,12 +107,18 @@ export default function JoinForm({
           <h1 className="text-2xl font-bold mt-1" style={{ color: accent }}>{businessName}</h1>
         </div>
 
-        <div className="bg-cream2 rounded-2xl shadow-sm border border-line p-5">
-          <p className="text-xs text-muted mb-4 uppercase tracking-widest">სტემპ-ბარათი</p>
-          {/* Show pre-filled circles so customers see the "head-start" before signing up */}
-          <StampGrid count={startingStamps} max={maxStamps} fillColor={accent} />
+        {/* First impression is the real themed card, pre-filled with the
+            head-start stamps. No member exists yet, so it's a preview: no QR. */}
+        <div className="flex flex-col items-center gap-3">
+          <WalletPassCard
+            businessName={businessName}
+            theme={cardTheme}
+            stampCount={startingStamps}
+            maxStamps={maxStamps}
+            preview
+          />
           {startingStamps > 0 && (
-            <p className="text-xs font-medium mt-3 text-center" style={{ color: accent }}>
+            <p className="text-sm font-medium text-center" style={{ color: accent }}>
               🎁 {startingStamps} სტემპი უკვე გელოდება!
             </p>
           )}
