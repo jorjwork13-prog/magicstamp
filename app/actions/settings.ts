@@ -4,6 +4,8 @@ import { after }    from 'next/server'
 import { redirect } from 'next/navigation'
 import { google }   from 'googleapis'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { selectBusinessWithTheme } from '@/lib/business-select'
+import { WALLET_HEX, isCardTheme, type CardTheme } from '@/lib/card-themes'
 
 type SettingsState = { error?: string; success?: boolean } | undefined
 type BrandingState = { error?: string; success?: boolean } | undefined
@@ -68,11 +70,12 @@ export async function updateSettingsAction(
   // new max is reflected immediately without waiting for the next stamp scan.
   after(async () => {
     try {
-      const { data: business } = await supabase
-        .from('businesses')
-        .select('id, brand_color')
-        .eq('email', user.email!)
-        .single()
+      const { data: business } = await selectBusinessWithTheme(
+        supabase,
+        'id, brand_color',
+        'email',
+        user.email!,
+      )
 
       if (!business) return
 
@@ -85,13 +88,16 @@ export async function updateSettingsAction(
 
       const { walletobjects } = makeWalletAuth()
       const classId  = `${ISSUER_ID}.magicstamp_loyalty_${business.id}`
-      const hexColor = validHex(business.brand_color)
+      // Same hero URL shape as pass creation and the scan update.
+      const theme: CardTheme | null = isCardTheme(business.card_theme) ? business.card_theme : null
+      const hexColor   = theme ? WALLET_HEX[theme] : validHex(business.brand_color)
+      const themeParam = theme ? `&theme=${theme}` : ''
 
       await Promise.allSettled(
-        members.map((m) => {
+        members.map((m: { id: string; stamp_count: number }) => {
           const stampImageUrl =
             `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(hexColor)}` +
-            `&count=${m.stamp_count}&max=${maxStamps}`
+            `&count=${m.stamp_count}&max=${maxStamps}${themeParam}`
           return walletobjects.loyaltyobject.patch({
             resourceId:  `${classId}.${m.id}`,
             requestBody: {

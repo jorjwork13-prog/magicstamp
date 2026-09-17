@@ -88,9 +88,10 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Build the loyalty object JWT ───────────────────────────────────────────
-  // Same color the loyalty class's hexBackgroundColor uses, so the hero image
-  // background matches the pass chrome instead of always showing brandColor.
-  const stampImageUrl = `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(passBgColor)}&count=${stampCount}&max=${maxStamps}`
+  // `theme` draws the hero in the card-theme colours, matching the Apple strip;
+  // `bg` (the class hexBackgroundColor) is the palette for unthemed businesses.
+  const themeParam    = isCardTheme(cardTheme) ? `&theme=${cardTheme}` : ''
+  const stampImageUrl = `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(passBgColor)}&count=${stampCount}&max=${maxStamps}${themeParam}`
 
   const loyaltyObject = {
     id:          `${classId}.${memberId}`,
