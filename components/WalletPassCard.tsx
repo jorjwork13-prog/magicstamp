@@ -47,6 +47,7 @@ export default function WalletPassCard({
   stampCount,
   maxStamps,
   passId,
+  preview,
   qrValue,
   passIdText,
   subtitle = 'სტემპ-ბარათი',
@@ -55,14 +56,24 @@ export default function WalletPassCard({
   theme: CardTheme
   stampCount: number
   maxStamps: number
-  /** member UUID — drives both the QR and the printed TPL id */
-  passId: string
   /** override what the QR encodes; defaults to passId */
   qrValue?: string
   /** override the printed TPL id (demo/preview passes without a real member) */
   passIdText?: string
   subtitle?: string
-}) {
+} & (
+  | {
+      /** member UUID — drives both the QR and the printed TPL id */
+      passId: string
+      preview?: false
+    }
+  | {
+      /** Pre-signup card: no member exists yet, so there's no personal QR or
+       *  pass id to show — the QR section is left off entirely. */
+      preview: true
+      passId?: undefined
+    }
+)) {
   const t = CARD_THEME_SPECS[theme]
   const remaining = Math.max(0, maxStamps - stampCount)
   const mono = "'JetBrains Mono', ui-monospace, monospace"
@@ -137,7 +148,7 @@ export default function WalletPassCard({
       {/* progress + stamps */}
       <div
         style={{
-          padding: t.headerBg ? '22px 22px 0 22px' : '18px 22px 0 22px',
+          padding: `${t.headerBg ? 22 : 18}px 22px ${preview ? 22 : 0}px 22px`,
           display: 'flex',
           flexDirection: 'column',
           gap: 16,
@@ -204,32 +215,34 @@ export default function WalletPassCard({
       </div>
 
       {/* QR + pass id */}
-      <div
-        style={{
-          padding: '16px 22px 20px 22px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 8,
-          borderTop: `1px dashed ${t.divider}`,
-          marginTop: 16,
-        }}
-      >
+      {!preview && (
         <div
           style={{
-            background: t.qrPlateBg,
-            border: t.qrPlateBorder ? `1px solid ${t.qrPlateBorder}` : undefined,
-            borderRadius: 10,
-            padding: 9,
-            lineHeight: 0,
+            padding: '16px 22px 20px 22px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 8,
+            borderTop: `1px dashed ${t.divider}`,
+            marginTop: 16,
           }}
         >
-          <StyledQr value={qrValue ?? passId} size={110} fg={t.qrFg} bg={t.qrBg} />
+          <div
+            style={{
+              background: t.qrPlateBg,
+              border: t.qrPlateBorder ? `1px solid ${t.qrPlateBorder}` : undefined,
+              borderRadius: 10,
+              padding: 9,
+              lineHeight: 0,
+            }}
+          >
+            <StyledQr value={qrValue ?? passId} size={110} fg={t.qrFg} bg={t.qrBg} />
+          </div>
+          <span style={{ fontFamily: mono, fontSize: 10, color: t.passIdColor, letterSpacing: '0.1em' }}>
+            {passIdText ?? passIdFromMemberId(passId)}
+          </span>
         </div>
-        <span style={{ fontFamily: mono, fontSize: 10, color: t.passIdColor, letterSpacing: '0.1em' }}>
-          {passIdText ?? passIdFromMemberId(passId)}
-        </span>
-      </div>
+      )}
     </div>
   )
 }
