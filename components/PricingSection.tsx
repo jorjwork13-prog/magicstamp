@@ -198,14 +198,9 @@ export default function PricingSection() {
               <li key={f}>✓ {f}</li>
             ))}
           </ul>
-          <a
-            className={s.cta2}
-            href="https://instagram.com/taplyapp"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            დამიკავშირდი
-          </a>
+          <Link className={s.cta2} href="/join/demo">
+            დაჯავშნე დემო
+          </Link>
         </div>
       </div>
     </section>
