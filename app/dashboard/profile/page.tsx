@@ -20,10 +20,7 @@ export default async function ProfilePage() {
 
   if (!business) redirect('/login')
 
-  const headersList = await headers()
-  const host = headersList.get('host') ?? 'localhost:3000'
-  const proto = headersList.get('x-forwarded-proto') ?? 'http'
-  const joinUrl = `${proto}://${host}/join/${business.id}`
+  const joinUrl = `https://taply.ge/join/${business.id}`
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
