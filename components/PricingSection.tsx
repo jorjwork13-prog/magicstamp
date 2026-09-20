@@ -198,9 +198,14 @@ export default function PricingSection() {
               <li key={f}>✓ {f}</li>
             ))}
           </ul>
-          <Link className={s.cta2} href="/join/demo">
+          <a
+            className={s.cta2}
+            href="https://calendly.com/taplysg/30min"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             დაჯავშნე დემო
-          </Link>
+          </a>
         </div>
       </div>
     </section>
