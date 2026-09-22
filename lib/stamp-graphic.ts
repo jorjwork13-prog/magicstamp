@@ -49,6 +49,17 @@ const ROW_OVERHANG   = 8 / 48
 
 const LABEL = 'პროგრესი'
 
+// ── Reward line ──────────────────────────────────────────────────────────────
+// Drawn into the image rather than a wallet textModule/secondaryField: those
+// render one flat colour for the whole value, and the keyword ("3 ვიზიტი",
+// "საჩუქარი") needs its own colour to actually read as an incentive rather
+// than a status line. Target size shrinks to fit the strip width — a two-
+// digit remaining count on a narrow strip is the one case that would overflow.
+const REWARD_SIZE    = 14
+const REWARD_MIN_SIZE = 10
+const REWARD_GAP     = 8   // gap between the grid and the reward line
+const REWARD_PAD_TOP = 3   // breathing room above the glyphs inside its band
+
 export type StampPalette = {
   background: string
   stampFill: string
@@ -59,6 +70,9 @@ export type StampPalette = {
   progressLabel: string
   progressNum: string
   progressDim: string
+  /** Reward line: the keyword gets rewardAccent, everything else rewardDim. */
+  rewardAccent: string
+  rewardDim: string
 }
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
@@ -107,6 +121,8 @@ export function paletteFor(theme: unknown, fallbackHex: string): StampPalette {
       progressLabel: t.progressLabel,
       progressNum:   t.progressNum,
       progressDim:   t.progressDim,
+      rewardAccent:  t.rewardIcon,
+      rewardDim:     t.rewardText,
     }
   }
 
@@ -120,6 +136,8 @@ export function paletteFor(theme: unknown, fallbackHex: string): StampPalette {
     progressLabel: mix(contrast, fallbackHex, 0.6),
     progressNum:   contrast,
     progressDim:   mix(contrast, fallbackHex, 0.45),
+    rewardAccent:  contrast,
+    rewardDim:     mix(contrast, fallbackHex, 0.45),
   }
 }
 
@@ -201,6 +219,42 @@ function glyphSvg(icon: StampIcon, x: number, y: number, size: number, filled: b
 function r2(v: number) { return Math.round(v * 100) / 100 }
 function r4(v: number) { return Math.round(v * 10000) / 10000 }
 
+// Digits render as tofu in the Georgian font (same reason the progress row
+// uses fonts.mono for its numbers) — every run needing a digit is marked
+// 'mono'; pure Georgian words use 'label'.
+type TextRun = { text: string; color: string; font: 'label' | 'mono' }
+
+function rewardRuns(remaining: number, p: StampPalette): TextRun[] {
+  if (remaining > 0) {
+    return [
+      { text: 'კიდევ ',   color: p.rewardDim,    font: 'label' },
+      { text: `${remaining}`, color: p.rewardAccent, font: 'mono' },
+      { text: ' ვიზიტი',  color: p.rewardAccent, font: 'label' },
+      { text: ' და ',     color: p.rewardDim,    font: 'label' },
+      { text: 'საჩუქარი', color: p.rewardAccent, font: 'label' },
+      { text: ' შენია',   color: p.rewardDim,    font: 'label' },
+    ]
+  }
+  return [
+    { text: 'საჩუქარი მზადაა', color: p.rewardAccent, font: 'label' },
+    { text: ' ახლავე წაიღე',  color: p.rewardDim,    font: 'label' },
+  ]
+}
+
+function measureRuns(fonts: Fonts, runs: TextRun[], size: number): number {
+  return runs.reduce((w, r) => w + textWidth(fonts[r.font], r.text, size), 0)
+}
+
+function drawRuns(fonts: Fonts, runs: TextRun[], x: number, baseline: number, size: number): string {
+  let cx = x
+  let out = ''
+  for (const r of runs) {
+    out += textPath(fonts[r.font], r.text, cx, baseline, size, r.color)
+    cx += textWidth(fonts[r.font], r.text, size)
+  }
+  return out
+}
+
 export function buildStampSvg({ count, max, width, height, palette, icon = 'hex' }: StampGraphicOptions, fonts: Fonts): string {
   const total  = Math.max(1, max)
   const filled = Math.min(Math.max(0, count), total)
@@ -216,12 +270,25 @@ export function buildStampSvg({ count, max, width, height, palette, icon = 'hex'
   const countW    = textWidth(fonts.mono, countText, numSize)
   const maxW      = textWidth(fonts.mono, maxText, numSize)
 
+  // ── Reward line ────────────────────────────────────────────────────────────
+  // Sized before the grid, since the grid gets whatever height is left over.
+  const remaining = total - filled
+  const runs       = rewardRuns(remaining, palette)
+  const availRewardW = width - 2 * PAD_X * s
+  let rewardSize   = Math.max(REWARD_MIN_SIZE * s, REWARD_SIZE * s)
+  let rewardW      = measureRuns(fonts, runs, rewardSize)
+  if (rewardW > availRewardW) {
+    rewardSize = Math.max(REWARD_MIN_SIZE * s, rewardSize * (availRewardW / rewardW))
+    rewardW    = measureRuns(fonts, runs, rewardSize)
+  }
+  const rewardBandH = rewardSize * capHeight(fonts.label) + REWARD_PAD_TOP * s
+
   // ── Hex grid ──────────────────────────────────────────────────────────────
   // Pick the row count that lets the hexes be biggest in the space under the
   // row rather than fixing a threshold. Ties keep the flatter layout.
   const gridTop = baseline + ROW_TO_GRID * s
   const availW  = width - 2 * PAD_X * s
-  const availH  = height - PAD_BOTTOM * s - gridTop
+  const availH  = height - PAD_BOTTOM * s - REWARD_GAP * s - rewardBandH - gridTop
 
   let rows = 1
   let perRow = total
@@ -279,9 +346,15 @@ export function buildStampSvg({ count, max, width, height, palette, icon = 'hex'
     textPath(fonts.mono, countText, rowRight - maxW - countW, baseline, numSize, palette.progressNum) +
     textPath(fonts.mono, maxText, rowRight - maxW, baseline, numSize, palette.progressDim)
 
+  // Centred in its reserved band at the very bottom.
+  const rewardX0      = (width - rewardW) / 2
+  const rewardBaseline = height - PAD_BOTTOM * s - (rewardBandH - rewardSize * capHeight(fonts.label)) / 2
+  const reward = drawRuns(fonts, runs, rewardX0, rewardBaseline, rewardSize)
+
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
   <rect width="${width}" height="${height}" fill="${palette.background}"/>
   ${progress}
+  ${reward}
   ${hexes}
 </svg>`
 }
@@ -300,6 +373,7 @@ function stripCacheKey({ count, max, width, height, palette, icon = 'hex' }: Sta
     palette.background, palette.stampFill, palette.stampHole,
     palette.stampEmpty, palette.emptyOpacity,
     palette.progressLabel, palette.progressNum, palette.progressDim,
+    palette.rewardAccent, palette.rewardDim,
   ].join('|')
 }
 

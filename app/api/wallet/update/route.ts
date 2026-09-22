@@ -3,6 +3,8 @@ import { google } from 'googleapis'
 import { WALLET_HEX, isCardTheme } from '@/lib/card-themes'
 import { isStampIcon } from '@/lib/stamp-icons'
 import { rewardCopy } from '@/lib/reward-copy'
+import { countRewardsEarned } from '@/lib/rewards-count'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
 
 const ISSUER_ID        = '3388000000023159453'
 const SHARED_CLASS_ID  = `${ISSUER_ID}.magicstamp_loyalty`
@@ -33,6 +35,12 @@ export async function POST(req: NextRequest) {
   const stampImageUrl = `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(hexColor)}&count=${stampCount}&max=${maxStamps}${themeParam}${iconParam}`
   const remaining     = Math.max(0, maxStamps - stampCount)
 
+  // The caller's own session (not the service-role client — that key isn't
+  // configured everywhere yet): RLS already lets a business owner read their
+  // own members' rewards, which is all this needs.
+  const supabase = await createSupabaseServerClient()
+  const rewardsEarned = await countRewardsEarned(supabase, memberId)
+
   const patchBody = {
     heroImage: {
       sourceUri:          { uri: stampImageUrl },
@@ -55,6 +63,11 @@ export async function POST(req: NextRequest) {
         header: 'ჯილდო',
         body:   rewardCopy(remaining),
         id:     'reward',
+      },
+      {
+        header: 'მიღებული საჩუქარი',
+        body:   String(rewardsEarned),
+        id:     'rewards_earned',
       },
     ],
   }

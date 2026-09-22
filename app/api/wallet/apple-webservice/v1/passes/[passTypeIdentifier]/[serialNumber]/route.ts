@@ -4,6 +4,7 @@ import { verifyPassAuth } from '@/lib/wallet-webservice-auth'
 import { isWalletPushEnabled } from '@/lib/wallet-push-flag'
 import { buildLoyaltyPass, PASS_TYPE_IDENTIFIER } from '@/lib/apple-pass-builder'
 import { parseSerialNumber } from '@/lib/wallet-serial'
+import { countRewardsEarned } from '@/lib/rewards-count'
 
 export const runtime = 'nodejs'
 
@@ -61,6 +62,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   }
 
   try {
+    const rewardsEarned = await countRewardsEarned(supabase, member.id)
     const pass = await buildLoyaltyPass({
       memberId:     member.id,
       memberName:   member.name,
@@ -72,6 +74,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       logoUrl:      business.logo_url,
       cardTheme:    business.card_theme,
       stampIcon:    business.stamp_icon,
+      rewardsEarned,
     })
     const buffer = pass.getAsBuffer()
 

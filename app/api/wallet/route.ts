@@ -127,6 +127,13 @@ export async function POST(req: NextRequest) {
         body:   rewardCopy(remaining),
         id:     'reward',
       },
+      {
+        header: 'მიღებული საჩუქარი',
+        // Always true here, not a placeholder: this route only runs right
+        // after a brand-new join.
+        body:   '0',
+        id:     'rewards_earned',
+      },
     ],
   }
 

@@ -57,6 +57,9 @@ export async function POST(req: NextRequest) {
       logoUrl,
       cardTheme,
       stampIcon: body.stampIcon,
+      // Always a brand-new member here (this route only runs right after
+      // joining) — 0 rewards is simply true, not a placeholder.
+      rewardsEarned: 0,
     })
     const buffer = pass.getAsBuffer()
 

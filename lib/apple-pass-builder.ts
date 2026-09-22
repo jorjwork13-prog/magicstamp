@@ -190,6 +190,9 @@ export type BuildLoyaltyPassInput = {
   logoUrl?: string | null
   cardTheme?: unknown
   stampIcon?: unknown
+  /** Lifetime count of completed cards — read from public.rewards by the
+   *  caller (0 for a brand-new member; live callers query it). */
+  rewardsEarned?: number
 }
 
 /**
@@ -260,6 +263,10 @@ export async function buildLoyaltyPass(input: BuildLoyaltyPassInput): Promise<PK
   // stamp, so it carries the notification.
   pass.secondaryFields.push(
     { key: 'reward', label: 'ჯილდო', value: rewardCopy(remaining), changeMessage: '%@' },
+  )
+
+  pass.auxiliaryFields.push(
+    { key: 'rewardsEarned', label: 'მიღებული საჩუქარი', value: String(Math.max(0, input.rewardsEarned ?? 0)) },
   )
 
   pass.backFields.push(
