@@ -34,22 +34,28 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await session.auth.getUser()
   if (!user?.email) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
-  const { data: owned } = await session
-    .from('businesses')
-    .select('id')
-    .eq('id', businessId)
-    .eq('email', user.email)
-    .maybeSingle()
-  if (!owned) return NextResponse.json({ error: 'forbidden' }, { status: 403 })
-
   const serialNumber = `${businessId}.${memberId}`
   const supabase = createSupabaseAdminClient()
 
-  const { data: tokens, error } = await supabase
-    .from('wallet_push_tokens')
-    .select('push_token')
-    .eq('pass_type_identifier', PASS_TYPE_IDENTIFIER)
-    .eq('serial_number', serialNumber)
+  // The ownership check and the token lookup don't depend on each other, and
+  // every round trip here sits between the scan and the customer's card
+  // changing — so they go out together. The tokens are still only *used* once
+  // ownership has been confirmed below.
+  const [{ data: owned }, { data: tokens, error }] = await Promise.all([
+    session
+      .from('businesses')
+      .select('id')
+      .eq('id', businessId)
+      .eq('email', user.email)
+      .maybeSingle(),
+    supabase
+      .from('wallet_push_tokens')
+      .select('push_token')
+      .eq('pass_type_identifier', PASS_TYPE_IDENTIFIER)
+      .eq('serial_number', serialNumber),
+  ])
+
+  if (!owned) return NextResponse.json({ error: 'forbidden' }, { status: 403 })
 
   if (error) {
     console.error('WALLET_APNS_NOTIFY_LOOKUP_ERROR:', error.message)

@@ -301,7 +301,38 @@ export function buildStampSvg({ count, max, width, height, palette }: StampGraph
 </svg>`
 }
 
+// Every pass rebuild rasterises the strip three times (@1x/@2x/@3x), and the
+// result is a pure function of (count, max, size, palette). Across a café's
+// customers those inputs repeat constantly — the same theme and the same
+// handful of counts — so the render is memoised. This is the difference
+// between "the card redraws while you watch" and "it just changed".
+const STRIP_CACHE_MAX = 150
+const stripCache = new Map<string, Buffer>()
+
+function stripCacheKey({ count, max, width, height, palette }: StampGraphicOptions): string {
+  return [
+    count, max, width, height,
+    palette.background, palette.stampFill, palette.stampHole,
+    palette.stampEmpty, palette.emptyOpacity,
+    palette.progressLabel, palette.progressNum, palette.progressDim,
+  ].join('|')
+}
+
 export async function renderStampPng(options: StampGraphicOptions): Promise<Buffer> {
+  const key = stripCacheKey(options)
+  const hit = stripCache.get(key)
+  if (hit) return hit
+
   const fonts = await loadFonts()
-  return sharp(Buffer.from(buildStampSvg(options, fonts))).png().toBuffer()
+  const png = await sharp(Buffer.from(buildStampSvg(options, fonts))).png().toBuffer()
+
+  // Plain FIFO eviction — the working set is tiny and uniform, so there is
+  // nothing an LRU would buy here beyond bookkeeping.
+  if (stripCache.size >= STRIP_CACHE_MAX) {
+    const oldest = stripCache.keys().next().value
+    if (oldest !== undefined) stripCache.delete(oldest)
+  }
+  stripCache.set(key, png)
+
+  return png
 }

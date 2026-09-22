@@ -21,8 +21,16 @@ export const ORGANIZATION_NAME    = 'Taply'
 // Where a pass tells iOS to register and fetch updates. Defaults to
 // production; set WALLET_WEBSERVICE_URL on a preview deployment so a test pass
 // registers against that deployment's routes instead of production's.
+//
+// Two things this value must get right, both of which cost us a day of 401s:
+//   1. It is the BASE url only. Wallet appends `/v1/devices/...` itself, so a
+//      trailing `/v1` here produces `.../v1/v1/devices/...` and a 404.
+//   2. It must be the canonical host that does NOT redirect. `taply.ge` 308s to
+//      `www.taply.ge`, and passd — like most HTTP clients — drops the
+//      `Authorization` header across a cross-host redirect, so every
+//      registration arrives unauthenticated and fails with 401.
 export const WALLET_WEBSERVICE_URL =
-  process.env.WALLET_WEBSERVICE_URL || 'https://magicstamp.vercel.app/api/wallet/apple-webservice/v1'
+  process.env.WALLET_WEBSERVICE_URL || 'https://www.taply.ge/api/wallet/apple-webservice'
 
 /** Same fallback the Google Wallet route uses, so both passes agree on color. */
 function validHex(color: string | null | undefined): string {
@@ -116,6 +124,14 @@ function loadIcons() {
   return iconCache
 }
 
+// A business logo changes about never, but every pass rebuild used to re-fetch
+// it over the network and re-encode it with sharp — on the update path that is
+// pure latency between "push arrives" and "card visibly changes". Cache the
+// finished @2x buffer per URL for the life of the process; a logo swap shows up
+// on the next cold start, which is the right trade for a loyalty card.
+const LOGO_TTL_MS = 30 * 60 * 1000
+const logoCache = new Map<string, { at: number; buf: Buffer | null }>()
+
 /**
  * Fetch the business logo for the pass's logo slot. Any failure here is
  * non-fatal — a pass without a logo still scans, so we fall back to the
@@ -132,6 +148,18 @@ async function fetchLogo(logoUrl: string | null | undefined): Promise<Buffer | n
   }
   if (parsed.protocol !== 'https:') return null
 
+  const key = parsed.toString()
+  const hit = logoCache.get(key)
+  if (hit && Date.now() - hit.at < LOGO_TTL_MS) return hit.buf
+
+  const buf = await loadLogoBuffer(parsed)
+  // Misses are cached too: a business with a broken logo_url would otherwise
+  // pay a full network timeout on every single pass rebuild.
+  logoCache.set(key, { at: Date.now(), buf })
+  return buf
+}
+
+async function loadLogoBuffer(parsed: URL): Promise<Buffer | null> {
   try {
     const res = await fetch(parsed, { signal: AbortSignal.timeout(5_000) })
     if (!res.ok) return null
@@ -216,7 +244,13 @@ export async function buildLoyaltyPass(input: BuildLoyaltyPassInput): Promise<PK
 
   pass.secondaryFields.push(
     { key: 'member', label: 'მფლობელი', value: memberName || '—' },
-    { key: 'reward', label: 'ჯილდო',    value: rewardText },
+    // changeMessage is what makes a stamp *visible*. The progress hexagons live
+    // in the strip image, and iOS never announces an image change — so without
+    // this the card updated in total silence and the customer had no idea
+    // anything happened. `reward` is the one field whose text moves on every
+    // stamp, so it carries the notification: "კიდევ 7 ვიზიტი — და ერთი საჩუქრად",
+    // and on the last stamp "ბარათი სავსეა — მიიღე საჩუქარი".
+    { key: 'reward', label: 'ჯილდო', value: rewardText, changeMessage: '%@' },
   )
 
   pass.backFields.push(
