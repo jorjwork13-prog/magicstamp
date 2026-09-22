@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import jwt from 'jsonwebtoken'
 import { WALLET_HEX, isCardTheme } from '@/lib/card-themes'
+import { isStampIcon } from '@/lib/stamp-icons'
+import { rewardCopy } from '@/lib/reward-copy'
 
 const ISSUER_ID         = '3388000000023159453'
 const STAMP_IMAGE_BASE  = 'https://magicstamp.vercel.app/api/stamp-image'
@@ -22,8 +24,12 @@ function cleanUrl(url: string | null | undefined): string | null {
 }
 
 export async function POST(req: NextRequest) {
-  const { memberId, memberName, stampCount, maxStamps, businessName, businessId, brandColor, logoUrl, cardTheme } =
-    await req.json()
+  const {
+    memberId, memberName, stampCount, maxStamps, businessName, businessId,
+    brandColor, logoUrl, cardTheme, stampIcon,
+  } = await req.json()
+
+  const iconParam = isStampIcon(stampIcon) ? `&icon=${stampIcon}` : ''
 
   const credentials = JSON.parse(process.env.GOOGLE_WALLET_CREDENTIALS!)
   const hexColor    = validHex(brandColor)
@@ -91,7 +97,7 @@ export async function POST(req: NextRequest) {
   // `theme` draws the hero in the card-theme colours, matching the Apple strip;
   // `bg` (the class hexBackgroundColor) is the palette for unthemed businesses.
   const themeParam    = isCardTheme(cardTheme) ? `&theme=${cardTheme}` : ''
-  const stampImageUrl = `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(passBgColor)}&count=${stampCount}&max=${maxStamps}${themeParam}`
+  const stampImageUrl = `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(passBgColor)}&count=${stampCount}&max=${maxStamps}${themeParam}${iconParam}`
 
   const loyaltyObject = {
     id:          `${classId}.${memberId}`,
@@ -99,7 +105,9 @@ export async function POST(req: NextRequest) {
     state:       'ACTIVE',
     accountId:   memberId,
     accountName: memberName,
-    barcode:     { type: 'QR_CODE', value: memberId, alternateText: memberId },
+    // "Powered by Taply" under the QR instead of the raw member UUID, which
+    // meant nothing to the customer.
+    barcode:     { type: 'QR_CODE', value: memberId, alternateText: 'Powered by Taply' },
     heroImage: {
       sourceUri:          { uri: stampImageUrl },
       contentDescription: { defaultValue: { language: 'en-US', value: 'Stamp progress' } },
@@ -116,9 +124,7 @@ export async function POST(req: NextRequest) {
       },
       {
         header: 'ჯილდო',
-        body:   remaining > 0
-          ? `კიდევ ${remaining} ვიზიტი — და ერთი საჩუქრად`
-          : 'ბარათი სავსეა — მიიღე საჩუქარი',
+        body:   rewardCopy(remaining),
         id:     'reward',
       },
     ],

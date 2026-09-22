@@ -3,32 +3,29 @@ import path from 'node:path'
 import { parse, type Font } from 'opentype.js'
 import sharp from 'sharp'
 import { CARD_THEME_SPECS, isCardTheme, type CardTheme } from '@/lib/card-themes'
+import { glyphMarkup, type StampIcon } from '@/lib/stamp-icons'
 
 /**
  * The stamp graphic on both wallet passes — Apple's strip.png and Google's
- * hero image (/api/stamp-image): the "პროგრესი  N / M" row above the
- * honeycomb, laid out like WalletPassCard.
+ * hero image (/api/stamp-image): the "პროგრესი  N / M" row above the stamp
+ * grid, laid out like WalletPassCard.
  *
  * Everything the customer reads lives inside this image. In an Apple
  * storeCard, primaryFields render on top of the strip, so a native progress
- * field would collide with the hexagons; on Google, Georgian in
- * textModulesData is unreliable, but text drawn into the image is not.
+ * field would collide with the grid; on Google, Georgian in textModulesData
+ * is unreliable, but text drawn into the image is not.
  *
- * Geometry is lifted from the StampHex component in WalletPassCard so the
- * honeycomb on a pass is the same shape the customer already saw on the join
- * page: a filled hexagon punched with a centre hole, an empty one drawn as an
- * outline. Colours come from CARD_THEME_SPECS rather than the single flat
- * WALLET_HEX, which is what made the pass look unrelated to the product.
+ * Glyph shapes live in lib/stamp-icons.ts and are shared with WalletPassCard,
+ * so the pass shows the same icon the customer already saw on the join page
+ * (hex by default, or cup/clippers per the business's stamp_icon setting).
+ * Colours come from CARD_THEME_SPECS rather than the single flat WALLET_HEX,
+ * which is what made the pass look unrelated to the product.
  *
  * Renders straight to a Buffer: Apple embeds the bytes, and the Google route
  * returns them as the hero image.
  */
 
-/** Hexagon path in a 100x100 box — identical to StampHex. */
-const HEX_FILLED = '50,12 83,31 83,69 50,88 17,69 17,31'
-const HEX_EMPTY  = '50,14 81,32 81,68 50,86 19,68 19,32'
-
-/** Visible hexagon height as a fraction of its box. */
+/** Visible glyph height as a fraction of its box — same for every icon kind. */
 const GLYPH_H = 0.88
 /** WalletPassCard's grid: 48px hexes with a 10px gap on both axes. */
 const GAP = 10 / 48
@@ -132,6 +129,7 @@ export type StampGraphicOptions = {
   width: number
   height: number
   palette: StampPalette
+  icon?: StampIcon
 }
 
 // ── Text ─────────────────────────────────────────────────────────────────────
@@ -187,28 +185,15 @@ function capHeight(font: Font): number {
 }
 
 /**
- * One hexagon, scaled from its native 100x100 box to `size` at (x, y).
- * The glyph only fills ~72% of its box width, so boxes can sit flush and
- * still leave a visible gap between hexes.
+ * One glyph (hex / cup / clippers), scaled from its native 100x100 box to
+ * `size` at (x, y). Each glyph only fills ~72-88% of its box, so boxes can
+ * sit flush and still leave a visible gap between them.
  */
-function hexSvg(x: number, y: number, size: number, filled: boolean, p: StampPalette): string {
+function glyphSvg(icon: StampIcon, x: number, y: number, size: number, filled: boolean, p: StampPalette): string {
   const s = size / 100
-  const open = `<g transform="translate(${r2(x)} ${r2(y)}) scale(${r4(s)})">`
-
-  if (filled) {
-    return (
-      open +
-      `<polygon points="${HEX_FILLED}" fill="${p.stampFill}" stroke="${p.stampFill}" ` +
-      `stroke-width="12" stroke-linejoin="round"/>` +
-      `<circle cx="50" cy="50" r="11" fill="${p.stampHole}"/>` +
-      `</g>`
-    )
-  }
-
   return (
-    open +
-    `<polygon points="${HEX_EMPTY}" fill="none" stroke="${p.stampEmpty}" ` +
-    `stroke-opacity="${p.emptyOpacity}" stroke-width="9" stroke-linejoin="round"/>` +
+    `<g transform="translate(${r2(x)} ${r2(y)}) scale(${r4(s)})">` +
+    glyphMarkup(icon, filled, p) +
     `</g>`
   )
 }
@@ -216,7 +201,7 @@ function hexSvg(x: number, y: number, size: number, filled: boolean, p: StampPal
 function r2(v: number) { return Math.round(v * 100) / 100 }
 function r4(v: number) { return Math.round(v * 10000) / 10000 }
 
-export function buildStampSvg({ count, max, width, height, palette }: StampGraphicOptions, fonts: Fonts): string {
+export function buildStampSvg({ count, max, width, height, palette, icon = 'hex' }: StampGraphicOptions, fonts: Fonts): string {
   const total  = Math.max(1, max)
   const filled = Math.min(Math.max(0, count), total)
   const s      = width / REF_W
@@ -273,7 +258,7 @@ export function buildStampSvg({ count, max, width, height, palette }: StampGraph
 
     // A short last row stays on the grid's columns, as in the card's CSS grid.
     for (let col = 0; col < n; col++) {
-      hexes += hexSvg(gridX0 + col * pitch, y, size, idx < filled, palette)
+      hexes += glyphSvg(icon, gridX0 + col * pitch, y, size, idx < filled, palette)
       idx++
     }
   }
@@ -309,9 +294,9 @@ export function buildStampSvg({ count, max, width, height, palette }: StampGraph
 const STRIP_CACHE_MAX = 150
 const stripCache = new Map<string, Buffer>()
 
-function stripCacheKey({ count, max, width, height, palette }: StampGraphicOptions): string {
+function stripCacheKey({ count, max, width, height, palette, icon = 'hex' }: StampGraphicOptions): string {
   return [
-    count, max, width, height,
+    count, max, width, height, icon,
     palette.background, palette.stampFill, palette.stampHole,
     palette.stampEmpty, palette.emptyOpacity,
     palette.progressLabel, palette.progressNum, palette.progressDim,

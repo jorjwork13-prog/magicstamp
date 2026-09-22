@@ -7,6 +7,7 @@ import { joinAction } from '@/app/actions/join'
 import StampGrid from '@/components/StampGrid'
 import WalletPassCard from '@/components/WalletPassCard'
 import type { CardTheme } from '@/lib/card-themes'
+import type { StampIcon } from '@/lib/stamp-icons'
 
 export default function JoinForm({
   businessId,
@@ -16,6 +17,7 @@ export default function JoinForm({
   logoUrl,
   brandColor,
   cardTheme = 'honey',
+  stampIcon = 'hex',
 }: {
   businessId: string
   businessName: string
@@ -24,6 +26,7 @@ export default function JoinForm({
   logoUrl?: string | null
   brandColor?: string | null
   cardTheme?: CardTheme
+  stampIcon?: StampIcon
 }) {
   const [state, formAction, pending] = useActionState(joinAction, undefined)
   const accent = brandColor ?? '#F2A33C'
@@ -61,6 +64,8 @@ export default function JoinForm({
             stampCount={earnedStamps}
             maxStamps={maxStamps}
             passId={state.memberId}
+            icon={stampIcon}
+            memberName={state.memberName}
           />
           <p className="text-xs text-gray-400 text-center">
             ეს QR კოდი შეინახეთ — მაღაზია სტემპს ამ კოდით დაამატებს
@@ -77,6 +82,7 @@ export default function JoinForm({
               stampCount={earnedStamps}
               maxStamps={maxStamps}
               cardTheme={cardTheme}
+              stampIcon={stampIcon}
             />
             <AppleWalletButton
               memberId={state.memberId}
@@ -88,6 +94,7 @@ export default function JoinForm({
               stampCount={earnedStamps}
               maxStamps={maxStamps}
               cardTheme={cardTheme}
+              stampIcon={stampIcon}
             />
           </div>
         </div>
@@ -158,7 +165,7 @@ function LegalFooter() {
   )
 }
 
-function WalletButton({ memberId, memberName, businessName, businessId, brandColor, logoUrl, stampCount, maxStamps, cardTheme }: {
+function WalletButton({ memberId, memberName, businessName, businessId, brandColor, logoUrl, stampCount, maxStamps, cardTheme, stampIcon }: {
   memberId: string
   memberName: string
   businessName: string
@@ -168,6 +175,7 @@ function WalletButton({ memberId, memberName, businessName, businessId, brandCol
   stampCount: number
   maxStamps: number
   cardTheme: CardTheme
+  stampIcon: StampIcon
 }) {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
@@ -179,7 +187,7 @@ function WalletButton({ memberId, memberName, businessName, businessId, brandCol
       const res = await fetch('/api/wallet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ memberId, memberName, stampCount, maxStamps, businessName, businessId, brandColor, logoUrl, cardTheme }),
+        body: JSON.stringify({ memberId, memberName, stampCount, maxStamps, businessName, businessId, brandColor, logoUrl, cardTheme, stampIcon }),
       })
       const data = await res.json()
       if (data.saveUrl) window.open(data.saveUrl, '_blank')
@@ -212,7 +220,7 @@ function WalletButton({ memberId, memberName, businessName, businessId, brandCol
  * binary, and letting Safari navigate to it is what makes iOS hand the pass
  * straight to Wallet. A JS blob download is unreliable in in-app browsers.
  */
-function AppleWalletButton({ memberId, memberName, businessName, businessId, brandColor, logoUrl, stampCount, maxStamps, cardTheme }: {
+function AppleWalletButton({ memberId, memberName, businessName, businessId, brandColor, logoUrl, stampCount, maxStamps, cardTheme, stampIcon }: {
   memberId: string
   memberName: string
   businessName: string
@@ -222,6 +230,7 @@ function AppleWalletButton({ memberId, memberName, businessName, businessId, bra
   stampCount: number
   maxStamps: number
   cardTheme: CardTheme
+  stampIcon: StampIcon
 }) {
   return (
     <form action="/api/wallet/apple" method="POST">
@@ -234,6 +243,7 @@ function AppleWalletButton({ memberId, memberName, businessName, businessId, bra
       <input type="hidden" name="stampCount" value={stampCount} />
       <input type="hidden" name="maxStamps" value={maxStamps} />
       <input type="hidden" name="cardTheme" value={cardTheme} />
+      <input type="hidden" name="stampIcon" value={stampIcon} />
       <button type="submit"
         className="w-full flex items-center justify-center gap-2 bg-black text-white rounded-xl py-3 text-sm font-semibold hover:bg-gray-900 transition">
         <svg viewBox="0 0 24 24" className="w-5 h-5" fill="white" aria-hidden="true">

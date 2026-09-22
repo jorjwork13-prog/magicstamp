@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import WalletPassCard from '@/components/WalletPassCard'
 import { CARD_THEMES, CARD_THEME_SPECS, type CardTheme } from '@/lib/card-themes'
+import type { StampIcon } from '@/lib/stamp-icons'
 import { updateCardThemeAction } from '@/app/actions/card-theme'
 
 /* Mini preview: the real WalletPassCard scaled down inside a fixed-size
@@ -13,10 +14,12 @@ export default function CardThemeForm({
   currentTheme,
   businessName,
   maxStamps,
+  icon,
 }: {
   currentTheme: CardTheme
   businessName: string
   maxStamps: number
+  icon: StampIcon
 }) {
   const [selected, setSelected] = useState<CardTheme>(currentTheme)
   const [error, setError] = useState<string | null>(null)
@@ -74,6 +77,7 @@ export default function CardThemeForm({
                     maxStamps={maxStamps}
                     passId="preview"
                     qrValue="https://taply.ge"
+                    icon={icon}
                   />
                 </div>
               </div>

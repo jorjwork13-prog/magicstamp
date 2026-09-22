@@ -85,6 +85,9 @@ export default function DemoClient() {
             qrValue="https://taply.ge"
             passIdText="TPL-7Q4M-92KE"
             subtitle="ყავის ბარათი · თბილისი"
+            icon="cup"
+            memberName="სანდრო"
+            rewardsEarned={3}
           />
         </div>
 

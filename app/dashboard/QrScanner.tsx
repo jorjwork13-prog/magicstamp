@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import StampGrid from '@/components/StampGrid'
 import type { CardTheme } from '@/lib/card-themes'
+import type { StampIcon } from '@/lib/stamp-icons'
 
 type ScanResult = { name: string; stamp_count: number; rewarded?: boolean }
 type Mode = 'idle' | 'scanning' | 'result'
@@ -30,11 +31,13 @@ export default function QrScanner({
   maxStamps,
   brandColor,
   cardTheme,
+  stampIcon,
 }: {
   businessId: string
   maxStamps: number
   brandColor: string | null
   cardTheme: CardTheme | null
+  stampIcon: StampIcon
 }) {
   const router = useRouter()
 
@@ -144,7 +147,10 @@ export default function QrScanner({
           fetch('/api/wallet/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId: decoded, stampCount: scan.stampCount, maxStamps, businessId, brandColor, cardTheme }),
+            body: JSON.stringify({
+              memberId: decoded, stampCount: scan.stampCount, maxStamps, businessId, brandColor, cardTheme,
+              stampIcon,
+            }),
           })
 
           // Phase 2, behind WALLET_APNS_PUSH_ENABLED — a no-op response

@@ -5,6 +5,8 @@ import { PKPass } from 'passkit-generator'
 import { loadPassCertificates } from '@/lib/apple-pass-certs'
 import { CARD_THEME_SPECS, isCardTheme, type CardTheme } from '@/lib/card-themes'
 import { paletteFor, renderStampPng } from '@/lib/stamp-graphic'
+import { isStampIcon } from '@/lib/stamp-icons'
+import { rewardCopy } from '@/lib/reward-copy'
 import { isWalletPushEnabled } from '@/lib/wallet-push-flag'
 import { passAuthToken } from '@/lib/wallet-webservice-auth'
 
@@ -187,6 +189,7 @@ export type BuildLoyaltyPassInput = {
   brandColor?: string | null
   logoUrl?: string | null
   cardTheme?: unknown
+  stampIcon?: unknown
 }
 
 /**
@@ -202,15 +205,16 @@ export async function buildLoyaltyPass(input: BuildLoyaltyPassInput): Promise<PK
   const hexColor = validHex(input.brandColor)
   const colors   = passColors(cardTheme, hexColor)
   const palette  = paletteFor(cardTheme, hexColor)
+  const icon     = isStampIcon(input.stampIcon) ? input.stampIcon : 'hex'
   const serialNumber = `${businessId}.${memberId}`
 
   const [certificates, icons, logo, strip, strip2x, strip3x] = await Promise.all([
     loadPassCertificates(),
     loadIcons(),
     fetchLogo(logoUrl),
-    renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W,     height: STRIP_H,     palette }),
-    renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W * 2, height: STRIP_H * 2, palette }),
-    renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W * 3, height: STRIP_H * 3, palette }),
+    renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W,     height: STRIP_H,     palette, icon }),
+    renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W * 2, height: STRIP_H * 2, palette, icon }),
+    renderStampPng({ count: stampCount, max: maxStamps, width: STRIP_W * 3, height: STRIP_H * 3, palette, icon }),
   ])
 
   const pass = new PKPass({}, certificates, {
@@ -234,23 +238,28 @@ export async function buildLoyaltyPass(input: BuildLoyaltyPassInput): Promise<PK
   pass.type = 'storeCard'
 
   // No primary field on purpose: in a storeCard it renders on top of the
-  // strip and collides with the hexagons. The progress row is drawn into
+  // strip and collides with the stamp grid. The progress row is drawn into
   // the strip image instead.
 
-  const remaining = Math.max(0, maxStamps - stampCount)
-  const rewardText = remaining > 0
-    ? `კიდევ ${remaining} ვიზიტი — და ერთი საჩუქრად`
-    : 'ბარათი სავსეა — მიიღე საჩუქარი'
-
-  pass.secondaryFields.push(
+  // Member name moves to the header row (top-right) so the top-left stays
+  // pure business identity — logoText only, no Taply mark riding along.
+  pass.headerFields.push(
     { key: 'member', label: 'მფლობელი', value: memberName || '—' },
-    // changeMessage is what makes a stamp *visible*. The progress hexagons live
-    // in the strip image, and iOS never announces an image change — so without
-    // this the card updated in total silence and the customer had no idea
-    // anything happened. `reward` is the one field whose text moves on every
-    // stamp, so it carries the notification: "კიდევ 7 ვიზიტი — და ერთი საჩუქრად",
-    // and on the last stamp "ბარათი სავსეა — მიიღე საჩუქარი".
-    { key: 'reward', label: 'ჯილდო', value: rewardText, changeMessage: '%@' },
+  )
+
+  const remaining = Math.max(0, maxStamps - stampCount)
+
+  // The only secondaryField: with nothing beside it, Wallet renders its
+  // value across the full width — the biggest native text this pass has,
+  // which is the closest a storeCard gets to "make the reward line bigger."
+  //
+  // changeMessage is what makes a stamp *visible*. The progress grid lives in
+  // the strip image, and iOS never announces an image change — so without
+  // this the card updated in total silence and the customer had no idea
+  // anything happened. `reward` is the one field whose text moves on every
+  // stamp, so it carries the notification.
+  pass.secondaryFields.push(
+    { key: 'reward', label: 'ჯილდო', value: rewardCopy(remaining), changeMessage: '%@' },
   )
 
   pass.backFields.push(
@@ -259,13 +268,14 @@ export async function buildLoyaltyPass(input: BuildLoyaltyPassInput): Promise<PK
   )
 
   // Same value the Google pass encodes, so one member scans identically
-  // whichever wallet the code is shown from.
+  // whichever wallet the code is shown from. altText prints "Powered by
+  // Taply" under the QR instead of the raw member UUID, which meant
+  // nothing to the customer.
   pass.setBarcodes({
     format:          'PKBarcodeFormatQR',
     message:         memberId,
     messageEncoding: 'iso-8859-1',
-    // No altText: it would print the raw member UUID under the QR, which
-    // means nothing to the customer. The QR still encodes memberId.
+    altText:         'Powered by Taply',
   })
 
   pass.addBuffer('icon.png', icons.icon)
@@ -273,12 +283,12 @@ export async function buildLoyaltyPass(input: BuildLoyaltyPassInput): Promise<PK
   pass.addBuffer('strip.png', strip)
   pass.addBuffer('strip@2x.png', strip2x)
   pass.addBuffer('strip@3x.png', strip3x)
+  // Only add a logo image when the business has a real one — otherwise the
+  // header shows just the business name (logoText), no Taply mark riding
+  // along in a slot the business never asked for.
   if (logo) {
     pass.addBuffer('logo.png', logo)
     pass.addBuffer('logo@2x.png', logo)
-  } else {
-    pass.addBuffer('logo.png', icons.icon2x)
-    pass.addBuffer('logo@2x.png', icons.icon2x)
   }
 
   return pass

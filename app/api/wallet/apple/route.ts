@@ -20,6 +20,7 @@ type PassRequestBody = {
   brandColor?: string | null
   logoUrl?: string | null
   cardTheme?: unknown
+  stampIcon?: unknown
 }
 
 async function readBody(req: NextRequest): Promise<PassRequestBody> {
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest) {
       brandColor,
       logoUrl,
       cardTheme,
+      stampIcon: body.stampIcon,
     })
     const buffer = pass.getAsBuffer()
 

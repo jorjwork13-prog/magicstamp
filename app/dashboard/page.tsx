@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import QrScanner from './QrScanner'
 import MembersTable from './MembersTable'
 import { isCardTheme } from '@/lib/card-themes'
+import { isStampIcon } from '@/lib/stamp-icons'
 import { selectBusinessWithTheme } from '@/lib/business-select'
 
 export default async function DashboardPage() {
@@ -41,6 +42,7 @@ export default async function DashboardPage() {
             maxStamps={business.max_stamps}
             brandColor={business.brand_color ?? null}
             cardTheme={isCardTheme(business.card_theme) ? business.card_theme : null}
+            stampIcon={isStampIcon(business.stamp_icon) ? business.stamp_icon : 'hex'}
           />
         </section>
 

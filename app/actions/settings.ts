@@ -6,6 +6,7 @@ import { google }   from 'googleapis'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { selectBusinessWithTheme } from '@/lib/business-select'
 import { WALLET_HEX, isCardTheme, type CardTheme } from '@/lib/card-themes'
+import { isStampIcon } from '@/lib/stamp-icons'
 
 type SettingsState = { error?: string; success?: boolean } | undefined
 type BrandingState = { error?: string; success?: boolean } | undefined
@@ -92,12 +93,13 @@ export async function updateSettingsAction(
       const theme: CardTheme | null = isCardTheme(business.card_theme) ? business.card_theme : null
       const hexColor   = theme ? WALLET_HEX[theme] : validHex(business.brand_color)
       const themeParam = theme ? `&theme=${theme}` : ''
+      const iconParam  = isStampIcon(business.stamp_icon) ? `&icon=${business.stamp_icon}` : ''
 
       await Promise.allSettled(
         members.map((m: { id: string; stamp_count: number }) => {
           const stampImageUrl =
             `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(hexColor)}` +
-            `&count=${m.stamp_count}&max=${maxStamps}${themeParam}`
+            `&count=${m.stamp_count}&max=${maxStamps}${themeParam}${iconParam}`
           return walletobjects.loyaltyobject.patch({
             resourceId:  `${classId}.${m.id}`,
             requestBody: {

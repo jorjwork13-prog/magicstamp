@@ -4,7 +4,9 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import SettingsForm from './SettingsForm'
 import BrandingForm from './BrandingForm'
 import CardThemeForm from './CardThemeForm'
+import StampIconForm from './StampIconForm'
 import { isCardTheme } from '@/lib/card-themes'
+import { isStampIcon } from '@/lib/stamp-icons'
 import { selectBusinessWithTheme } from '@/lib/business-select'
 
 export default async function SettingsPage() {
@@ -47,7 +49,16 @@ export default async function SettingsPage() {
             currentTheme={isCardTheme(business.card_theme) ? business.card_theme : 'honey'}
             businessName={business.name}
             maxStamps={business.max_stamps}
+            icon={isStampIcon(business.stamp_icon) ? business.stamp_icon : 'hex'}
           />
+        </section>
+
+        <section className="bg-dbg2 rounded-2xl shadow-sm border border-dline p-6">
+          <h2 className="text-base font-semibold text-dtext mb-1">სტემპის ხატულა</h2>
+          <p className="text-xs text-dmuted mb-5">
+            აირჩიე ხატულა, რომელიც ბიზნესს ყველაზე მეტად შეესაბამება — ცვლილება ბარათის პროგრესის ბადეზეც აისახება.
+          </p>
+          <StampIconForm currentIcon={isStampIcon(business.stamp_icon) ? business.stamp_icon : 'hex'} />
         </section>
 
         <section className="bg-dbg2 rounded-2xl shadow-sm border border-dline p-6">

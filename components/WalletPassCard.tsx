@@ -1,37 +1,26 @@
 import { CARD_THEME_SPECS, passIdFromMemberId, type CardTheme } from '@/lib/card-themes'
+import { glyphMarkup, type StampIcon } from '@/lib/stamp-icons'
 import StyledQr from '@/components/StyledQr'
 
-/** Hexagon stamp — filled hexes are punched with a hole (honeycomb card
- *  concept), empty hexes are outlines. Geometry from design-refs/cards.html. */
-function StampHex({ filled, fill, hole, empty, size = 48 }: {
+/** One stamp glyph (hex / cup / clippers) — markup comes from stamp-icons.ts,
+ *  the same source the server-rendered wallet-pass image uses, so this
+ *  preview never drifts from what actually lands in Apple/Google Wallet. */
+function StampGlyph({ icon, filled, fill, hole, empty, emptyOpacity, size = 48 }: {
+  icon: StampIcon
   filled: boolean
   fill: string
   hole: string
   empty: string
+  emptyOpacity: number
   size?: number
 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
-      {filled ? (
-        <>
-          <polygon
-            points="50,12 83,31 83,69 50,88 17,69 17,31"
-            fill={fill}
-            stroke={fill}
-            strokeWidth="12"
-            strokeLinejoin="round"
-          />
-          <circle cx="50" cy="50" r="11" fill={hole} />
-        </>
-      ) : (
-        <polygon
-          points="50,14 81,32 81,68 50,86 19,68 19,32"
-          fill="none"
-          stroke={empty}
-          strokeWidth="9"
-          strokeLinejoin="round"
-        />
-      )}
+      <g
+        dangerouslySetInnerHTML={{
+          __html: glyphMarkup(icon, filled, { stampFill: fill, stampHole: hole, stampEmpty: empty, emptyOpacity }),
+        }}
+      />
     </svg>
   )
 }
@@ -49,6 +38,9 @@ export default function WalletPassCard({
   passId,
   qrValue,
   passIdText,
+  icon = 'hex',
+  memberName,
+  rewardsEarned = 0,
   subtitle = 'სტემპ-ბარათი',
 }: {
   businessName: string
@@ -61,6 +53,12 @@ export default function WalletPassCard({
   qrValue?: string
   /** override the printed TPL id (demo/preview passes without a real member) */
   passIdText?: string
+  /** which glyph the stamp grid uses — set per business in Settings */
+  icon?: StampIcon
+  /** shown top-right in the header; omitted on previews with no real member */
+  memberName?: string | null
+  /** lifetime count of completed cards — shown as a small stat, hidden at 0 */
+  rewardsEarned?: number
   subtitle?: string
 }) {
   const t = CARD_THEME_SPECS[theme]
@@ -80,7 +78,7 @@ export default function WalletPassCard({
         fontFamily: "'Outfit', 'Noto Sans Georgian', sans-serif",
       }}
     >
-      {/* header */}
+      {/* header — business identity only; no Taply mark up here */}
       <div
         style={{
           background: t.headerBg || undefined,
@@ -91,26 +89,6 @@ export default function WalletPassCard({
           gap: t.headerBg ? 12 : 14,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <svg width="17" height="17" viewBox="0 0 100 100" aria-hidden="true">
-              <polygon
-                points="50,12 83,31 83,69 50,88 17,69 17,31"
-                fill={t.logoFill}
-                stroke={t.logoFill}
-                strokeWidth="12"
-                strokeLinejoin="round"
-              />
-              <circle cx="50" cy="50" r="11" fill={t.logoHole} />
-            </svg>
-            <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: t.headerText }}>
-              Taply
-            </span>
-          </div>
-          <span style={{ fontSize: 11, fontWeight: 600, color: t.headerMuted, letterSpacing: '0.06em' }}>
-            ლოიალობის ბარათი
-          </span>
-        </div>
         <div
           style={
             t.nameUnderline
@@ -118,15 +96,33 @@ export default function WalletPassCard({
               : undefined
           }
         >
-          <div
-            style={{
-              fontSize: 24,
-              fontWeight: t.businessNameWeight,
-              color: t.headerText,
-              letterSpacing: '-0.01em',
-            }}
-          >
-            {businessName}
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
+            <div
+              style={{
+                fontSize: 24,
+                fontWeight: t.businessNameWeight,
+                color: t.headerText,
+                letterSpacing: '-0.01em',
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {businessName}
+            </div>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: t.headerMuted,
+                letterSpacing: '0.04em',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+              }}
+            >
+              {memberName || 'ლოიალობის ბარათი'}
+            </span>
           </div>
           <div style={{ fontSize: 12, fontWeight: 500, color: t.headerMuted, marginTop: 2 }}>
             {subtitle}
@@ -163,17 +159,20 @@ export default function WalletPassCard({
           }}
         >
           {Array.from({ length: maxStamps }, (_, i) => (
-            <StampHex
+            <StampGlyph
               key={i}
+              icon={icon}
               filled={i < stampCount}
               fill={t.stampFill}
               hole={t.stampHole}
               empty={t.stampEmpty}
+              emptyOpacity={1}
             />
           ))}
         </div>
 
-        {/* reward band */}
+        {/* reward band — the keyword gets its own colour, the rest stays dim;
+            a wallet's native text can't do that, but this in-app preview can */}
         <div
           style={{
             background: t.rewardBg,
@@ -195,15 +194,28 @@ export default function WalletPassCard({
             />
             <circle cx="50" cy="50" r="13" fill={t.rewardIcon} />
           </svg>
-          <span style={{ fontSize: 14, fontWeight: 600, color: t.rewardText, lineHeight: 1.4 }}>
-            {remaining > 0
-              ? `კიდევ ${remaining} ვიზიტი — და ერთი საჩუქრად`
-              : 'ბარათი სავსეა — მიიღე საჩუქარი'}
+          <span style={{ fontSize: 15, fontWeight: 600, color: t.rewardText, lineHeight: 1.4 }}>
+            {remaining > 0 ? (
+              <>
+                კიდევ <b style={{ color: t.rewardIcon, fontWeight: 800 }}>{remaining} ვიზიტი</b> და{' '}
+                <b style={{ color: t.rewardIcon, fontWeight: 800 }}>საჩუქარი</b> შენია
+              </>
+            ) : (
+              <>
+                <b style={{ color: t.rewardIcon, fontWeight: 800 }}>საჩუქარი მზადაა</b>, ახლავე წაიღე
+              </>
+            )}
           </span>
         </div>
+
+        {rewardsEarned > 0 && (
+          <p style={{ fontSize: 11.5, color: t.progressLabel, textAlign: 'center', margin: '-6px 0 0' }}>
+            🏆 მთლიანობაში მიღებული: {rewardsEarned} საჩუქარი
+          </p>
+        )}
       </div>
 
-      {/* QR + pass id */}
+      {/* QR + pass id + Taply attribution (below the code, not above) */}
       <div
         style={{
           padding: '16px 22px 20px 22px',
@@ -229,6 +241,21 @@ export default function WalletPassCard({
         <span style={{ fontFamily: mono, fontSize: 10, color: t.passIdColor, letterSpacing: '0.1em' }}>
           {passIdText ?? passIdFromMemberId(passId)}
         </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 4 }}>
+          <svg width="13" height="13" viewBox="0 0 100 100" aria-hidden="true">
+            <polygon
+              points="50,12 83,31 83,69 50,88 17,69 17,31"
+              fill={t.logoFill}
+              stroke={t.logoFill}
+              strokeWidth="12"
+              strokeLinejoin="round"
+            />
+            <circle cx="50" cy="50" r="11" fill={t.logoHole} />
+          </svg>
+          <span style={{ fontSize: 10.5, fontWeight: 600, color: t.headerMuted, letterSpacing: '0.02em' }}>
+            Powered by Taply
+          </span>
+        </div>
       </div>
     </div>
   )

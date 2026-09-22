@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { paletteFor, renderStampPng } from '@/lib/stamp-graphic'
+import { isStampIcon } from '@/lib/stamp-icons'
 
 // Bundled fonts read from disk and sharp — this route cannot run on the edge.
 export const runtime = 'nodejs'
@@ -34,12 +35,14 @@ export async function GET(req: NextRequest) {
   const count = Math.max(0, intParam(sp.get('count'), 0))
   const max   = Math.max(1, intParam(sp.get('max'), 10))
 
+  const iconParam = sp.get('icon')
   const png = await renderStampPng({
     count,
     max,
     width:   WIDTH,
     height:  HEIGHT,
     palette: paletteFor(sp.get('theme'), resolveBg(sp.get('bg'))),
+    icon:    isStampIcon(iconParam) ? iconParam : 'hex',
   })
 
   return new NextResponse(new Uint8Array(png), {

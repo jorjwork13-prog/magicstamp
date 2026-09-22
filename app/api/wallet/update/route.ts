@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import { WALLET_HEX, isCardTheme } from '@/lib/card-themes'
+import { isStampIcon } from '@/lib/stamp-icons'
+import { rewardCopy } from '@/lib/reward-copy'
 
 const ISSUER_ID        = '3388000000023159453'
 const SHARED_CLASS_ID  = `${ISSUER_ID}.magicstamp_loyalty`
@@ -12,7 +14,8 @@ function validHex(color: string | null | undefined): string {
 }
 
 export async function POST(req: NextRequest) {
-  const { memberId, stampCount, maxStamps, businessId, brandColor, cardTheme } = await req.json()
+  const { memberId, stampCount, maxStamps, businessId, brandColor, cardTheme, stampIcon } =
+    await req.json()
 
   const credentials = JSON.parse(process.env.GOOGLE_WALLET_CREDENTIALS!)
 
@@ -26,7 +29,9 @@ export async function POST(req: NextRequest) {
   // the themed image for a brand-colour one.
   const hexColor      = isCardTheme(cardTheme) ? WALLET_HEX[cardTheme] : validHex(brandColor)
   const themeParam    = isCardTheme(cardTheme) ? `&theme=${cardTheme}` : ''
-  const stampImageUrl = `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(hexColor)}&count=${stampCount}&max=${maxStamps}${themeParam}`
+  const iconParam     = isStampIcon(stampIcon) ? `&icon=${stampIcon}` : ''
+  const stampImageUrl = `${STAMP_IMAGE_BASE}?bg=${encodeURIComponent(hexColor)}&count=${stampCount}&max=${maxStamps}${themeParam}${iconParam}`
+  const remaining     = Math.max(0, maxStamps - stampCount)
 
   const patchBody = {
     heroImage: {
@@ -37,6 +42,9 @@ export async function POST(req: NextRequest) {
       label:   'სტემპი',
       balance: { int: stampCount },
     },
+    // Same copy as pass creation (app/api/wallet/route.ts) — this route used
+    // to patch in different, stale text ("სტემპები" / a flat "უფასო ყავა"
+    // line) on every scan, overwriting the nicer text set at creation.
     textModulesData: [
       {
         header: 'სტემპები',
@@ -45,7 +53,7 @@ export async function POST(req: NextRequest) {
       },
       {
         header: 'ჯილდო',
-        body:   `უფასო ყავა ${maxStamps} სტემპის შემდეგ`,
+        body:   rewardCopy(remaining),
         id:     'reward',
       },
     ],

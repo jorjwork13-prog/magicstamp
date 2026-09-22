@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { isCardTheme } from '@/lib/card-themes'
+import { isStampIcon } from '@/lib/stamp-icons'
 import { selectBusinessWithTheme } from '@/lib/business-select'
 import JoinForm from './JoinForm'
 
@@ -41,6 +42,7 @@ export default async function JoinPage({
       logoUrl={business.logo_url ?? null}
       brandColor={business.brand_color ?? null}
       cardTheme={isCardTheme(business.card_theme) ? business.card_theme : 'honey'}
+      stampIcon={isStampIcon(business.stamp_icon) ? business.stamp_icon : 'hex'}
     />
   )
 }

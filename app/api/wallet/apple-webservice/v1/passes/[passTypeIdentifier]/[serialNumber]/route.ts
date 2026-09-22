@@ -45,7 +45,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   const { data: business } = await supabase
     .from('businesses')
-    .select('name, max_stamps, brand_color, logo_url, card_theme')
+    .select('name, max_stamps, brand_color, logo_url, card_theme, stamp_icon')
     .eq('id', parsed.businessId)
     .maybeSingle()
 
@@ -71,6 +71,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       brandColor:   business.brand_color,
       logoUrl:      business.logo_url,
       cardTheme:    business.card_theme,
+      stampIcon:    business.stamp_icon,
     })
     const buffer = pass.getAsBuffer()
 
