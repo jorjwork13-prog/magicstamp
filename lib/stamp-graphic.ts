@@ -34,8 +34,15 @@ const GAP = 10 / 48
 // so the @2x/@3x renders are the same picture with more pixels. The card's own
 // sizes (12px label, 22px number, 16px row gap) are tightened slightly to fit
 // the strip's 123pt height.
+//
+// PAD_X is intentionally generous (~14% of the width per side, not the ~6% a
+// 375pt-authored image would suggest is safe): on a real device the label and
+// the ones digit of the count were getting clipped at both edges — Wallet
+// doesn't letterbox the strip into the card, it fills the card's actual
+// (wider, per-device) width, and content that assumed a snug edge lost its
+// margin in that scale-up. Treat this canvas as having a wide unsafe bleed.
 const REF_W          = 375
-const PAD_X          = 22
+const PAD_X          = 52
 const PAD_TOP        = 14
 const PAD_BOTTOM     = 12
 const LABEL_SIZE     = 11

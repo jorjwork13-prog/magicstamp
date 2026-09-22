@@ -252,26 +252,27 @@ export async function buildLoyaltyPass(input: BuildLoyaltyPassInput): Promise<PK
 
   const remaining = Math.max(0, maxStamps - stampCount)
 
-  // The only secondaryField: with nothing beside it, Wallet renders its
-  // value across the full width — the biggest native text this pass has,
-  // which is the closest a storeCard gets to "make the reward line bigger."
+  // A short, distinct status line — NOT the coloured sentence already drawn
+  // into the strip below the grid. An earlier version repeated that exact
+  // phrase here too, in plain text right under the coloured one, which read
+  // as a mistake rather than as the deliberate VoiceOver-accessible fallback
+  // it actually is (a flat PNG has no text for a screen reader to find).
   //
   // changeMessage is what makes a stamp *visible*. The progress grid lives in
   // the strip image, and iOS never announces an image change — so without
   // this the card updated in total silence and the customer had no idea
   // anything happened. `reward` is the one field whose text moves on every
   // stamp, so it carries the notification.
+  const statusText = remaining > 0 ? '✓ სტემპი დაფიქსირდა' : '🎉 ბარათი სავსეა!'
   pass.secondaryFields.push(
-    { key: 'reward', label: 'ჯილდო', value: rewardCopy(remaining), changeMessage: '%@' },
-  )
-
-  pass.auxiliaryFields.push(
-    { key: 'rewardsEarned', label: 'მიღებული საჩუქარი', value: String(Math.max(0, input.rewardsEarned ?? 0)) },
+    { key: 'reward', label: 'სტატუსი', value: statusText, changeMessage: '%@' },
   )
 
   pass.backFields.push(
-    { key: 'business', label: 'ბიზნესი', value: business },
-    { key: 'memberId', label: 'წევრის კოდი', value: memberId },
+    { key: 'business',      label: 'ბიზნესი',          value: business },
+    { key: 'memberId',       label: 'წევრის კოდი',      value: memberId },
+    { key: 'rewardStatus',   label: 'ჯილდო',            value: rewardCopy(remaining) },
+    { key: 'rewardsEarned',  label: 'მიღებული საჩუქარი', value: String(Math.max(0, input.rewardsEarned ?? 0)) },
   )
 
   // Same value the Google pass encodes, so one member scans identically
