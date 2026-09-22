@@ -94,3 +94,89 @@ export function computeSegments(members: AnalyticsMember[], maxStamps: number, n
     atRiskTotal: atRiskAll.length,
   }
 }
+
+// ── Single member ───────────────────────────────────────────────────────────
+// Everything below reads the visit log (public.stamps) rather than
+// members.stamp_count. The count is a balance that resets to 0 on every reward,
+// so it can answer "how close is this card to full?" and nothing else — not
+// "how often does this person actually come?", which is the question that sells.
+
+/**
+ * Where a member sits against **their own** rhythm, not a fixed number of days.
+ * Somebody who comes daily and has been away a week is in trouble; somebody who
+ * comes monthly and has been away a week is perfectly normal. One global
+ * threshold calls the second one at risk and misses the first entirely.
+ */
+export type MemberRhythm = 'never' | 'too-early' | 'steady' | 'slowing' | 'at-risk'
+
+export type MemberStats = {
+  totalVisits: number
+  firstVisit: string | null
+  lastVisit: string | null
+  daysSinceLastVisit: number | null
+  /** Mean days between consecutive visits. Null below two visits — one visit is not an interval. */
+  avgIntervalDays: number | null
+  rhythm: MemberRhythm
+}
+
+export type VisitDay = { date: string; count: number }
+
+/**
+ * Visit timestamps (ISO, any order) → per-day counts for the last `days` days.
+ *
+ * Buckets by UTC date, matching computeDailySignups above. Georgia is UTC+4, so
+ * a visit between 00:00 and 04:00 local lands on the previous day — harmless for
+ * a café, but this needs a real timezone before the peak-hours view ships, since
+ * that one is read hour by hour.
+ */
+export function computeVisitDays(visits: string[], days = 84, now = Date.now()): VisitDay[] {
+  const buckets = new Map<string, number>()
+  for (let i = days - 1; i >= 0; i--) {
+    buckets.set(new Date(now - i * DAY_MS).toISOString().slice(0, 10), 0)
+  }
+  for (const v of visits) {
+    const key = new Date(v).toISOString().slice(0, 10)
+    if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + 1)
+  }
+  return Array.from(buckets.entries()).map(([date, count]) => ({ date, count }))
+}
+
+export function computeMemberStats(visits: string[], now = Date.now()): MemberStats {
+  const sorted = [...visits].sort()
+  const totalVisits = sorted.length
+
+  if (totalVisits === 0) {
+    return {
+      totalVisits: 0,
+      firstVisit: null,
+      lastVisit: null,
+      daysSinceLastVisit: null,
+      avgIntervalDays: null,
+      rhythm: 'never',
+    }
+  }
+
+  const firstVisit = sorted[0]
+  const lastVisit = sorted[totalVisits - 1]
+  const daysSinceLastVisit = daysSince(lastVisit, now)
+
+  // Span over gaps, not a mean of pairwise diffs: same value, but it makes the
+  // "fewer than two visits ⇒ no interval" case impossible to get wrong.
+  const avgIntervalDays =
+    totalVisits >= 2
+      ? (new Date(lastVisit).getTime() - new Date(firstVisit).getTime()) / DAY_MS / (totalVisits - 1)
+      : null
+
+  // Three visits is the first point at which an "interval" is more than an
+  // accident of two dates, so anything below that is reported as such rather
+  // than dressed up as a rhythm.
+  let rhythm: MemberRhythm
+  if (avgIntervalDays === null || totalVisits < 3) {
+    rhythm = 'too-early'
+  } else {
+    const ratio = daysSinceLastVisit / Math.max(avgIntervalDays, 0.5)
+    rhythm = ratio <= 1.5 ? 'steady' : ratio <= 2.5 ? 'slowing' : 'at-risk'
+  }
+
+  return { totalVisits, firstVisit, lastVisit, daysSinceLastVisit, avgIntervalDays, rhythm }
+}

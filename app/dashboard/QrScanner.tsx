@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createSupabaseBrowserClient } from '@/lib/supabase'
 import StampGrid from '@/components/StampGrid'
 import type { CardTheme } from '@/lib/card-themes'
 
@@ -76,7 +75,6 @@ export default function QrScanner({
     if (mode !== 'scanning') return
 
     let mounted = true
-    const supabase = createSupabaseBrowserClient()
 
     const box = document.getElementById('qr-video-box')
     if (box) box.innerHTML = ''
@@ -98,34 +96,40 @@ export default function QrScanner({
 
           processingRef.current = true
 
-          const { data: member } = await supabase
-            .from('members')
-            .select('name, stamp_count')
-            .eq('id', decoded)
-            .eq('business_id', businessId)
-            .single()
+          // One call, one transaction: the balance, the visit-history row and
+          // the reward row are written together or not at all (see migration
+          // 008). Previously these were three independent writes from here, so
+          // stamp_count and the visit history drifted apart over time — and the
+          // browser decided the new count and whether a reward was earned, which
+          // is not a decision a client should be making.
+          let scan: { name: string; stampCount: number; rewarded: boolean }
+          try {
+            const res = await fetch('/api/stamps/scan', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ memberId: decoded, businessId }),
+            })
 
-          if (!mounted) return
+            if (!mounted) return
 
-          if (!member) {
-            setScanError('წევრი ვერ მოიძებნა')
+            if (res.status === 404) {
+              setScanError('წევრი ვერ მოიძებნა')
+              processingRef.current = false
+              return
+            }
+            if (!res.ok) throw new Error(`scan failed: ${res.status}`)
+
+            scan = await res.json()
+          } catch {
+            if (!mounted) return
+            setScanError('სტემპის დაფიქსირება ვერ მოხერხდა')
             processingRef.current = false
             return
           }
 
-          const newCount = member.stamp_count + 1
-          const rewarded = newCount >= maxStamps
-          const countToSave = rewarded ? 0 : newCount
-
-          const { data: updated } = await supabase
-            .from('members')
-            .update({ stamp_count: countToSave, last_visit: new Date().toISOString() })
-            .eq('id', decoded)
-            .eq('business_id', businessId)
-            .select('name, stamp_count')
-            .single()
-
           if (!mounted) return
+
+          const { rewarded } = scan
 
           recentScansRef.current.set(decoded, Date.now())
           resultDelayRef.current = rewarded ? REWARD_MS : RESULT_MS
@@ -133,38 +137,14 @@ export default function QrScanner({
           await safeStop()
           if (!mounted) return
 
-          setResult({ ...(updated ?? { name: member.name, stamp_count: countToSave }), rewarded })
+          setResult({ name: scan.name, stamp_count: scan.stampCount, rewarded })
           setMode('result')
           router.refresh()
-
-          // Visit history. Deliberately fire-and-forget and deliberately never
-          // awaited before the result is shown: a scan at the counter must not
-          // wait on, or be broken by, bookkeeping. If migration 007 has not been
-          // run yet these simply fail and the scan is unaffected.
-          //
-          // This is what makes frequency, trends, cohorts and peak hours
-          // computable at all — members.stamp_count is a balance that resets on
-          // reward, so it can never answer "how often does this person come?".
-          void supabase
-            .from('stamps')
-            .insert({ member_id: decoded, business_id: businessId })
-            .then(({ error }) => {
-              if (error) console.error('STAMP_LOG_ERROR:', error.message)
-            })
-
-          if (rewarded) {
-            void supabase
-              .from('rewards')
-              .insert({ member_id: decoded, business_id: businessId, stamps_required: maxStamps })
-              .then(({ error }) => {
-                if (error) console.error('REWARD_LOG_ERROR:', error.message)
-              })
-          }
 
           fetch('/api/wallet/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ memberId: decoded, stampCount: countToSave, maxStamps, businessId, brandColor, cardTheme }),
+            body: JSON.stringify({ memberId: decoded, stampCount: scan.stampCount, maxStamps, businessId, brandColor, cardTheme }),
           })
 
           // Phase 2, behind WALLET_APNS_PUSH_ENABLED — a no-op response

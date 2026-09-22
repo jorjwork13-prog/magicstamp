@@ -249,13 +249,13 @@ export default function DemoClient() {
               <div className="flex gap-2.5 items-center">
                 <span className="w-2 h-2 bg-ink rounded-full shrink-0" />
                 <span className="text-[15px] font-semibold text-ink">
-                  შემდეგ <span className="font-mono text-[19px] font-bold">₾69</span>/თვე სამუდამოდ,{' '}
+                  შემდეგ <span className="font-mono text-[19px] font-bold">₾69</span>/თვე 6 თვის განმავლობაში,{' '}
                   <s className="opacity-55">₾99</s>-ის ნაცვლად
                 </span>
               </div>
             </div>
             <p className="relative bg-ink/10 rounded-xl px-3.5 py-[11px] text-[13px] leading-normal text-ink">
-              დამფუძნებლის ფასი სამუდამოდ გრჩება. მე-11 ბიზნესი უკვე სრულ ფასს იხდის.
+              დამფუძნებლის ფასი 6 თვე გრჩება. მე-11 ბიზნესი უკვე სრულ ფასს იხდის.
             </p>
           </div>
         </div>

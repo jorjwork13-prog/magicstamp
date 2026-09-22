@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import StampGrid from '@/components/StampGrid'
+import MemberProfileModal from '@/app/dashboard/MemberProfileModal'
 import { CARD_THEME_SPECS, type CardTheme } from '@/lib/card-themes'
 
 type Member = {
@@ -30,6 +31,7 @@ export default function MembersTable({
   cardTheme?: CardTheme
 }) {
   const [search, setSearch] = useState('')
+  const [selected, setSelected] = useState<Member | null>(null)
   const themeSpec = CARD_THEME_SPECS[cardTheme]
 
   const filtered = members.filter(
@@ -83,7 +85,17 @@ export default function MembersTable({
               {filtered.map((member) => (
                 <tr
                   key={member.id}
-                  className="border-b border-dline/50 hover:bg-dbg transition-colors"
+                  onClick={() => setSelected(member)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setSelected(member)
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`${member.name} — პროფილის გახსნა`}
+                  className="border-b border-dline/50 hover:bg-dbg transition-colors cursor-pointer focus:outline-none focus:bg-dbg"
                 >
                   <td className="py-3 px-1 font-medium text-dtext">
                     {member.name}
@@ -109,6 +121,15 @@ export default function MembersTable({
             </tbody>
           </table>
         </div>
+      )}
+
+      {selected && (
+        <MemberProfileModal
+          member={selected}
+          maxStamps={maxStamps}
+          cardTheme={cardTheme}
+          onClose={() => setSelected(null)}
+        />
       )}
     </div>
   )

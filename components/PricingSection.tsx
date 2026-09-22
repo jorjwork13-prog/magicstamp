@@ -143,7 +143,7 @@ export default function PricingSection() {
       <div className={s.founderBanner}>
         <span>
           პირველი <strong>10 პარტნიორი</strong>: 2 თვე უფასოდ, შემდეგ{' '}
-          <strong>₾69/თვე სამუდამოდ</strong>
+          <strong>₾69/თვე — 6 თვის განმავლობაში</strong>
         </span>
       </div>
 
