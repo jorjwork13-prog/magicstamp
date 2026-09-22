@@ -137,6 +137,30 @@ export default function QrScanner({
           setMode('result')
           router.refresh()
 
+          // Visit history. Deliberately fire-and-forget and deliberately never
+          // awaited before the result is shown: a scan at the counter must not
+          // wait on, or be broken by, bookkeeping. If migration 007 has not been
+          // run yet these simply fail and the scan is unaffected.
+          //
+          // This is what makes frequency, trends, cohorts and peak hours
+          // computable at all — members.stamp_count is a balance that resets on
+          // reward, so it can never answer "how often does this person come?".
+          void supabase
+            .from('stamps')
+            .insert({ member_id: decoded, business_id: businessId })
+            .then(({ error }) => {
+              if (error) console.error('STAMP_LOG_ERROR:', error.message)
+            })
+
+          if (rewarded) {
+            void supabase
+              .from('rewards')
+              .insert({ member_id: decoded, business_id: businessId, stamps_required: maxStamps })
+              .then(({ error }) => {
+                if (error) console.error('REWARD_LOG_ERROR:', error.message)
+              })
+          }
+
           fetch('/api/wallet/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
