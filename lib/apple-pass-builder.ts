@@ -283,7 +283,10 @@ export async function buildLoyaltyPass(input: BuildLoyaltyPassInput): Promise<PK
     format:          'PKBarcodeFormatQR',
     message:         memberId,
     messageEncoding: 'iso-8859-1',
-    altText:         'Powered by Taply',
+    // ⬡ stands in for a logo mark: nothing below a storeCard's barcode can be
+    // an image (there's no such slot in the pass format), only this one line
+    // of plain text — the closest a real Taply mark gets to "below the QR."
+    altText:         '⬡ Powered by Taply',
   })
 
   pass.addBuffer('icon.png', icons.icon)

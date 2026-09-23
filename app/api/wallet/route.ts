@@ -106,8 +106,9 @@ export async function POST(req: NextRequest) {
     accountId:   memberId,
     accountName: memberName,
     // "Powered by Taply" under the QR instead of the raw member UUID, which
-    // meant nothing to the customer.
-    barcode:     { type: 'QR_CODE', value: memberId, alternateText: 'Powered by Taply' },
+    // meant nothing to the customer. ⬡ stands in for a logo mark — Google's
+    // barcode label is plain text too, no image slot exists here either.
+    barcode:     { type: 'QR_CODE', value: memberId, alternateText: '⬡ Powered by Taply' },
     heroImage: {
       sourceUri:          { uri: stampImageUrl },
       contentDescription: { defaultValue: { language: 'en-US', value: 'Stamp progress' } },
