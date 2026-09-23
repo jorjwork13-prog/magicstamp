@@ -18,6 +18,12 @@ export function isStampIcon(v: unknown): v is StampIcon {
   return v === 'hex' || v === 'cup' || v === 'clippers'
 }
 
+/** Public path to the cup artwork, for browser-rendered previews
+ *  (WalletPassCard, StampIconForm) — the server-rendered pass instead
+ *  reads the same file off disk and inlines it as a data: URI, since it
+ *  has no network access at render time. */
+export const CUP_IMAGE_PATH = '/icons/cup.png'
+
 export const STAMP_ICON_LABELS: Record<StampIcon, { label: string; labelKa: string }> = {
   hex:      { label: 'Hexagon', labelKa: 'ჰექსაგონი' },
   cup:      { label: 'Coffee cup', labelKa: 'ყავის ჭიქა' },
@@ -34,11 +40,30 @@ export type GlyphPalette = {
 
 /** Inner SVG markup for one glyph — no outer <svg>/<g transform>, so callers
  *  can position it however they need (a `<g transform>` wrapper in both the
- *  string-built pass graphic and the React preview). */
-export function glyphMarkup(icon: StampIcon, filled: boolean, p: GlyphPalette): string {
-  if (icon === 'cup') return cupMarkup(filled, p)
+ *  string-built pass graphic and the React preview).
+ *
+ *  `cupImageHref` is the business-supplied coffee-cup artwork (a traced
+ *  line-art mark, not a flat-colour shape we can theme) — callers pass
+ *  whatever reference works in their context: a data: URI for the
+ *  server-rendered pass (lib/stamp-graphic.ts, no network access at
+ *  render time) or a plain /icons/cup.png path for the browser-rendered
+ *  preview (components/WalletPassCard.tsx, StampIconForm.tsx). Falls back
+ *  to the drawn vector mug if no href is supplied. */
+export function glyphMarkup(icon: StampIcon, filled: boolean, p: GlyphPalette, cupImageHref?: string): string {
+  if (icon === 'cup') return cupImageHref ? cupImageMarkup(filled, cupImageHref) : cupMarkup(filled, p)
   if (icon === 'clippers') return clippersMarkup(filled, p)
   return hexMarkup(filled, p)
+}
+
+/** The uploaded artwork itself, dimmed for an empty stamp rather than
+ *  recoloured — it's a fixed brown/grey line drawing, not a themeable
+ *  single-colour silhouette like the drawn glyphs. */
+function cupImageMarkup(filled: boolean, href: string): string {
+  const opacity = filled ? 1 : 0.22
+  return (
+    `<image href="${href}" x="4" y="2" width="92" height="96" ` +
+    `opacity="${opacity}" preserveAspectRatio="xMidYMid meet"/>`
+  )
 }
 
 function hexMarkup(filled: boolean, p: GlyphPalette): string {

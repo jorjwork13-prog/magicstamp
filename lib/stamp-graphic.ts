@@ -41,14 +41,18 @@ const GAP = 10 / 48
 // doesn't letterbox the strip into the card, it fills the card's actual
 // (wider, per-device) width, and content that assumed a snug edge lost its
 // margin in that scale-up. Treat this canvas as having a wide unsafe bleed.
+// The progress row (label + count) is deliberately modest — the grid is the
+// thing a customer should actually look at, not the number restating what
+// the grid already shows. Shrinking this row's footprint hands its space to
+// the grid loop below, which always sizes glyphs to fill whatever is left.
 const REF_W          = 375
 const PAD_X          = 52
-const PAD_TOP        = 14
+const PAD_TOP        = 10
 const PAD_BOTTOM     = 12
-const LABEL_SIZE     = 11
+const LABEL_SIZE     = 9
 const LABEL_TRACKING = 0.08 // em, as on the card
-const NUM_SIZE       = 20
-const ROW_TO_GRID    = 12
+const NUM_SIZE       = 15
+const ROW_TO_GRID    = 8
 /** Minimum space between label and number when the grid is narrow. */
 const MIN_ROW_GAP    = 16
 /** The card's content edge sits this far (in hex boxes) outside the grid. */
@@ -185,6 +189,23 @@ function loadFonts(): Promise<Fonts> {
   return fontCache
 }
 
+// The business-supplied cup artwork, read once and kept as a data: URI so
+// the SVG string is self-contained — sharp/librsvg has no network access
+// at render time, so a plain /icons/cup.png reference (fine in the browser
+// preview) would not resolve here.
+let cupImageCache: Promise<string> | null = null
+
+function loadCupImage(): Promise<string> {
+  if (!cupImageCache) {
+    cupImageCache = (async () => {
+      const buf = await readFile(path.join(process.cwd(), 'public', 'icons', 'cup.png'))
+      return `data:image/png;base64,${buf.toString('base64')}`
+    })()
+    cupImageCache.catch(() => { cupImageCache = null })
+  }
+  return cupImageCache
+}
+
 /** Advance width of `text`, with CSS-style letter-spacing between glyphs. */
 function textWidth(font: Font, text: string, size: number, tracking = 0): number {
   const glyphs = font.stringToGlyphs(text)
@@ -214,11 +235,11 @@ function capHeight(font: Font): number {
  * `size` at (x, y). Each glyph only fills ~72-88% of its box, so boxes can
  * sit flush and still leave a visible gap between them.
  */
-function glyphSvg(icon: StampIcon, x: number, y: number, size: number, filled: boolean, p: StampPalette): string {
+function glyphSvg(icon: StampIcon, x: number, y: number, size: number, filled: boolean, p: StampPalette, cupImageHref?: string): string {
   const s = size / 100
   return (
     `<g transform="translate(${r2(x)} ${r2(y)}) scale(${r4(s)})">` +
-    glyphMarkup(icon, filled, p) +
+    glyphMarkup(icon, filled, p, cupImageHref) +
     `</g>`
   )
 }
@@ -262,7 +283,7 @@ function drawRuns(fonts: Fonts, runs: TextRun[], x: number, baseline: number, si
   return out
 }
 
-export function buildStampSvg({ count, max, width, height, palette, icon = 'hex' }: StampGraphicOptions, fonts: Fonts): string {
+export function buildStampSvg({ count, max, width, height, palette, icon = 'hex' }: StampGraphicOptions, fonts: Fonts, cupImageHref?: string): string {
   const total  = Math.max(1, max)
   const filled = Math.min(Math.max(0, count), total)
   const s      = width / REF_W
@@ -332,7 +353,7 @@ export function buildStampSvg({ count, max, width, height, palette, icon = 'hex'
 
     // A short last row stays on the grid's columns, as in the card's CSS grid.
     for (let col = 0; col < n; col++) {
-      hexes += glyphSvg(icon, gridX0 + col * pitch, y, size, idx < filled, palette)
+      hexes += glyphSvg(icon, gridX0 + col * pitch, y, size, idx < filled, palette, cupImageHref)
       idx++
     }
   }
@@ -389,8 +410,11 @@ export async function renderStampPng(options: StampGraphicOptions): Promise<Buff
   const hit = stripCache.get(key)
   if (hit) return hit
 
-  const fonts = await loadFonts()
-  const png = await sharp(Buffer.from(buildStampSvg(options, fonts))).png().toBuffer()
+  const [fonts, cupImageHref] = await Promise.all([
+    loadFonts(),
+    options.icon === 'cup' ? loadCupImage() : Promise.resolve(undefined),
+  ])
+  const png = await sharp(Buffer.from(buildStampSvg(options, fonts, cupImageHref))).png().toBuffer()
 
   // Plain FIFO eviction — the working set is tiny and uniform, so there is
   // nothing an LRU would buy here beyond bookkeeping.

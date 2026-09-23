@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { STAMP_ICONS, STAMP_ICON_LABELS, glyphMarkup, type StampIcon } from '@/lib/stamp-icons'
+import { STAMP_ICONS, STAMP_ICON_LABELS, glyphMarkup, CUP_IMAGE_PATH, type StampIcon } from '@/lib/stamp-icons'
 import { updateStampIconAction } from '@/app/actions/stamp-icon'
 
 /** Small filled+empty pair, previewing the glyph exactly as it draws on the
@@ -12,7 +12,7 @@ function GlyphPreview({ icon }: { icon: StampIcon }) {
     <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
       {[true, false].map((filled) => (
         <svg key={String(filled)} width={40} height={40} viewBox="0 0 100 100" aria-hidden="true">
-          <g dangerouslySetInnerHTML={{ __html: glyphMarkup(icon, filled, palette) }} />
+          <g dangerouslySetInnerHTML={{ __html: glyphMarkup(icon, filled, palette, CUP_IMAGE_PATH) }} />
         </svg>
       ))}
     </div>

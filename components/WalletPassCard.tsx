@@ -1,5 +1,5 @@
 import { CARD_THEME_SPECS, passIdFromMemberId, type CardTheme } from '@/lib/card-themes'
-import { glyphMarkup, type StampIcon } from '@/lib/stamp-icons'
+import { glyphMarkup, CUP_IMAGE_PATH, type StampIcon } from '@/lib/stamp-icons'
 import StyledQr from '@/components/StyledQr'
 
 /** One stamp glyph (hex / cup / clippers) — markup comes from stamp-icons.ts,
@@ -18,7 +18,7 @@ function StampGlyph({ icon, filled, fill, hole, empty, emptyOpacity, size = 48 }
     <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
       <g
         dangerouslySetInnerHTML={{
-          __html: glyphMarkup(icon, filled, { stampFill: fill, stampHole: hole, stampEmpty: empty, emptyOpacity }),
+          __html: glyphMarkup(icon, filled, { stampFill: fill, stampHole: hole, stampEmpty: empty, emptyOpacity }, CUP_IMAGE_PATH),
         }}
       />
     </svg>
