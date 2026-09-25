@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { createSupabaseBrowserClient } from '@/lib/supabase'
 import StampGrid from '@/components/StampGrid'
 import { CARD_THEME_SPECS, type CardTheme } from '@/lib/card-themes'
 import {
@@ -142,6 +142,12 @@ export default function MemberProfileModal({
 
   useEffect(() => {
     let alive = true
+
+    // Must be the cookie-aware browser client. The plain `supabase` export has
+    // no session, so every one of these reads comes back as an empty result
+    // rather than an error — RLS simply shows an anonymous caller nothing, and
+    // the profile silently reported "0 visits" for a member with a full card.
+    const supabase = createSupabaseBrowserClient()
 
     ;(async () => {
       const visitsQuery = supabase
