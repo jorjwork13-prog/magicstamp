@@ -12,10 +12,33 @@ import {
   LogoutIcon,
 } from '@/components/HexIcons'
 
+/* Billing — a receipt inside the same hexagon frame as the HexIcons set.
+ * Kept here rather than in HexIcons so this change stays inside the nav file. */
+function BillingIcon({ size = 22 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinejoin="round"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3 L20 7.5 L20 16.5 L12 21 L4 16.5 L4 7.5 Z" />
+      <path d="M9 8.5h6v7.5l-1.5-1-1.5 1-1.5-1-1.5 1Z" />
+      <path d="M10.5 11h3M10.5 13h2" />
+    </svg>
+  )
+}
+
 const NAV_ITEMS = [
   { Icon: DashboardIcon, label: 'დეშბორდი',   href: '/dashboard'           },
   { Icon: ProfileIcon,   label: 'პროფილი',    href: '/dashboard/profile'   },
   { Icon: SettingsIcon,  label: 'პარამეტრები', href: '/dashboard/settings'  },
+  { Icon: BillingIcon,   label: 'გადახდები',   href: '/dashboard/billing'   },
   { Icon: AnalyticsIcon, label: 'ანალიტიკა',  href: '/dashboard/analytics' },
 ]
 
