@@ -36,7 +36,7 @@ export default function InvoiceList({ invoices }: { invoices: InvoiceRow[] }) {
     <>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <h2 className="text-base font-semibold text-dtext">ინვოისები</h2>
-        <div className="flex gap-1.5" role="group" aria-label="ფილტრი">
+        <div className="w-full sm:w-auto flex flex-wrap gap-1.5" role="group" aria-label="ფილტრი">
           {FILTERS.map((f) => {
             const active = f.value === filter
             return (

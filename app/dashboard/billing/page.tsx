@@ -76,20 +76,9 @@ export default async function BillingPage() {
     .filter((d): d is string => !!d)
     .sort((a, b) => Date.parse(a) - Date.parse(b))[0]
 
-  const outstandingCard = (
-    <OutstandingCard
-      amount={outstanding}
-      hasOpen={openInvoices.length > 0}
-      earliestDue={earliestDue ?? null}
-    />
-  )
-
   return (
     <>
-      <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        {/* Phone: the first question is how much, so the amount leads. */}
-        <div className="sm:hidden">{outstandingCard}</div>
-
+      <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         <header className="px-1">
           <p className="text-xs uppercase tracking-[0.08em] text-dmuted">{business.name}</p>
           <h1 className="text-2xl font-bold text-dtext mt-1">გადახდები</h1>
@@ -97,10 +86,17 @@ export default async function BillingPage() {
 
         {state && <BillingBanner state={state} openInvoices={openInvoices} href="#invoices" />}
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_300px]">
+        <div className="grid gap-4 sm:grid-cols-2">
           <PlanCard sub={sub} />
           <StatusCard state={state} />
-          <div className="hidden sm:block sm:col-span-2 lg:col-span-1">{outstandingCard}</div>
+          {/* Phone: the first question is how much, so the amount leads. */}
+          <div className="order-first sm:order-none sm:col-span-2">
+            <OutstandingCard
+              amount={outstanding}
+              hasOpen={openInvoices.length > 0}
+              earliestDue={earliestDue ?? null}
+            />
+          </div>
         </div>
 
         {sub?.founder_rate_until && founderDays !== null && (
@@ -129,7 +125,7 @@ export default async function BillingPage() {
         </section>
       </main>
 
-      <footer className="max-w-5xl mx-auto px-4 py-6 flex justify-center gap-4 text-xs text-dmuted border-t border-dline">
+      <footer className="max-w-3xl mx-auto px-4 py-6 flex justify-center gap-4 text-xs text-dmuted border-t border-dline">
         <Link href="/privacy" className="hover:text-dlink transition">კონფიდენციალურობა</Link>
         <span>·</span>
         <Link href="/terms" className="hover:text-dlink transition">პირობები</Link>
