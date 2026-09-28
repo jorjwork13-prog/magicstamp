@@ -118,6 +118,82 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
   )
 }
 
+// Test-only until the wallet message flow has been proven on real phones.
+const WALLET_MESSAGE_TEST = process.env.NEXT_PUBLIC_WALLET_MESSAGE_TEST === '1'
+const MESSAGE_MAX = 120
+
+/** Sends one note to this member's Apple Wallet pass via /api/wallet/message. */
+function WalletMessageForm({ memberId, businessId }: { memberId: string; businessId: string | null }) {
+  const [text, setText] = useState('')
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const trimmed = text.trim()
+
+  async function send(e: React.FormEvent) {
+    e.preventDefault()
+    if (!businessId || !trimmed) return
+    setSending(true)
+    setResult(null)
+    setError(null)
+    try {
+      const res = await fetch('/api/wallet/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId, businessId, text: trimmed }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok || !data?.ok) {
+        setError(data?.error ?? `შეცდომა ${res.status}`)
+        return
+      }
+      // Zero devices almost always means the pass was never added to Wallet —
+      // say so, rather than leave the owner guessing why nothing arrived.
+      setResult(
+        data.pushed === 0
+          ? 'ამ კლიენტს ბარათი ჯერ არ დაუმატებია'
+          : `გაიგზავნა — ${data.pushed} მოწყობილობა`,
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <form onSubmit={send} className="border-t border-dline pt-4 flex flex-col gap-2">
+      <h4 className="text-xs font-semibold text-dtext">შეტყობინების გაგზავნა</h4>
+      <label htmlFor="wallet-message" className="text-[11px] text-dmuted">
+        ტექსტი, რომელიც კლიენტის Apple Wallet ბარათზე გამოჩნდება
+      </label>
+      <textarea
+        id="wallet-message"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        maxLength={MESSAGE_MAX}
+        rows={3}
+        className="bg-dbg border border-dline rounded-xl px-3 py-2 text-sm text-dtext placeholder:text-dmuted resize-none focus:outline-none focus:border-honey/60"
+      />
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[11px] text-dmuted tabular-nums" aria-live="polite">
+          {text.length}/{MESSAGE_MAX}
+        </span>
+        <button
+          type="submit"
+          disabled={sending || !trimmed || !businessId}
+          className="bg-honey text-ink text-sm font-semibold rounded-xl px-4 py-1.5 transition hover:bg-comb disabled:opacity-40 disabled:hover:bg-honey"
+        >
+          {sending ? 'იგზავნება…' : 'გაგზავნა'}
+        </button>
+      </div>
+      {result && <p className="text-[11px] text-dtext" role="status">{result}</p>}
+      {error && <p className="text-[11px] text-dtext" role="alert">{error}</p>}
+    </form>
+  )
+}
+
 export default function MemberProfileModal({
   member,
   maxStamps,
@@ -133,6 +209,7 @@ export default function MemberProfileModal({
   const [visits, setVisits] = useState<string[]>([])
   const [rewardCount, setRewardCount] = useState<number | null>(null)
   const [loadError, setLoadError] = useState(false)
+  const [businessId, setBusinessId] = useState<string | null>(null)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -165,9 +242,17 @@ export default function MemberProfileModal({
         .select('id', { count: 'exact', head: true })
         .eq('member_id', member.id)
 
-      const [visitsRes, rewardsRes] = await Promise.all([visitsQuery, rewardsQuery])
+      // ProfileMember carries no business_id, and the message route needs one.
+      const businessQuery = supabase
+        .from('members')
+        .select('business_id')
+        .eq('id', member.id)
+        .maybeSingle()
+
+      const [visitsRes, rewardsRes, businessRes] = await Promise.all([visitsQuery, rewardsQuery, businessQuery])
       if (!alive) return
 
+      setBusinessId((businessRes.data?.business_id as string | undefined) ?? null)
       if (visitsRes.error) setLoadError(true)
       setVisits((visitsRes.data ?? []).map((r: { created_at: string }) => r.created_at))
       setRewardCount(rewardsRes.error ? null : (rewardsRes.count ?? 0))
@@ -256,6 +341,10 @@ export default function MemberProfileModal({
                 <h4 className="text-xs font-semibold text-dtext mb-2">ბოლო 12 კვირა</h4>
                 <VisitStrip days={strip} />
               </div>
+
+              {WALLET_MESSAGE_TEST && (
+                <WalletMessageForm memberId={member.id} businessId={businessId} />
+              )}
 
               {/* The history only starts from the day visit logging shipped, so an
                   empty strip on an old member is expected rather than a bug. */}

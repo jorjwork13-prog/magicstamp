@@ -5,6 +5,7 @@ import { isWalletPushEnabled } from '@/lib/wallet-push-flag'
 import { buildLoyaltyPass, PASS_TYPE_IDENTIFIER } from '@/lib/apple-pass-builder'
 import { parseSerialNumber } from '@/lib/wallet-serial'
 import { countRewardsEarned } from '@/lib/rewards-count'
+import { walletChangeTime } from '@/lib/wallet-change-time'
 
 export const runtime = 'nodejs'
 
@@ -35,9 +36,12 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   const supabase = createSupabaseAdminClient()
 
+  // `*` rather than naming wallet_message / wallet_message_at: until migration
+  // 011 is run those columns don't exist, and naming them would 404 every
+  // pass update. Missing columns just read as "no message".
   const { data: member } = await supabase
     .from('members')
-    .select('id, name, stamp_count, last_visit')
+    .select('*')
     .eq('id', parsed.memberId)
     .eq('business_id', parsed.businessId)
     .maybeSingle()
@@ -52,7 +56,8 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   if (!business) return new NextResponse(null, { status: 404 })
 
-  const lastModified = member.last_visit ? new Date(member.last_visit) : new Date(0)
+  const changedAt = walletChangeTime(member)
+  const lastModified = changedAt ? new Date(changedAt) : new Date(0)
   const ifModifiedSince = req.headers.get('if-modified-since')
   if (ifModifiedSince) {
     const since = new Date(ifModifiedSince)
@@ -75,6 +80,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       cardTheme:    business.card_theme,
       stampIcon:    business.stamp_icon,
       rewardsEarned,
+      message:      member.wallet_message ?? null,
     })
     const buffer = pass.getAsBuffer()
 

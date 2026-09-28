@@ -193,6 +193,9 @@ export type BuildLoyaltyPassInput = {
   /** Lifetime count of completed cards — read from public.rewards by the
    *  caller (0 for a brand-new member; live callers query it). */
   rewardsEarned?: number
+  /** One-off note from the business (members.wallet_message, migration 011),
+   *  shown on the back of the pass. */
+  message?: string | null
 }
 
 /**
@@ -268,7 +271,14 @@ export async function buildLoyaltyPass(input: BuildLoyaltyPassInput): Promise<PK
     { key: 'reward', label: 'სტატუსი', value: statusText, changeMessage: '%@' },
   )
 
+  // Wallet has no "send a message" API; the banner comes from changeMessage
+  // on a field whose value changes. iOS only announces a change to a field
+  // that was ALREADY on the previous version of the pass — a field that first
+  // appears alongside the message may arrive silently. So `notice` is always
+  // present, holding a neutral placeholder until there is something to say.
+  const message = input.message?.trim() || 'ახალი შეტყობინება არ არის'
   pass.backFields.push(
+    { key: 'notice',        label: 'შეტყობინება',      value: message, changeMessage: '%@' },
     { key: 'business',      label: 'ბიზნესი',          value: business },
     { key: 'memberId',       label: 'წევრის კოდი',      value: memberId },
     { key: 'rewardStatus',   label: 'ჯილდო',            value: rewardCopy(remaining) },

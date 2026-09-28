@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { buildLoyaltyPass } from '@/lib/apple-pass-builder'
+import { createSupabaseAdminClient } from '@/lib/supabase-admin'
 
 // node-forge, sharp and fs — this route cannot run on the edge runtime.
 export const runtime = 'nodejs'
@@ -32,6 +33,25 @@ async function readBody(req: NextRequest): Promise<PassRequestBody> {
 }
 
 /**
+ * members.wallet_message, so a re-download shows the same note a pushed update
+ * would. Best-effort: `*` because the column only exists after migration 011,
+ * and any failure here just means the placeholder — never a failed download.
+ */
+async function readWalletMessage(memberId: string, businessId: string): Promise<string | null> {
+  try {
+    const { data } = await createSupabaseAdminClient()
+      .from('members')
+      .select('*')
+      .eq('id', memberId)
+      .eq('business_id', businessId)
+      .maybeSingle()
+    return typeof data?.wallet_message === 'string' ? data.wallet_message : null
+  } catch {
+    return null
+  }
+}
+
+/**
  * The pass itself is built in lib/apple-pass-builder.ts, shared with the
  * PassKit web service's "get latest pass" route so a pass downloaded here and
  * one re-fetched after a push update are identical — including the
@@ -46,6 +66,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const message = await readWalletMessage(memberId, businessId)
     const pass = await buildLoyaltyPass({
       memberId,
       memberName,
@@ -60,6 +81,7 @@ export async function POST(req: NextRequest) {
       // Always a brand-new member here (this route only runs right after
       // joining) — 0 rewards is simply true, not a placeholder.
       rewardsEarned: 0,
+      message,
     })
     const buffer = pass.getAsBuffer()
 

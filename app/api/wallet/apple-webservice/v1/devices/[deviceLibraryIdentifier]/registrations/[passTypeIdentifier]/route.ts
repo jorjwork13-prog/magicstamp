@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from '@/lib/supabase-admin'
 import { isWalletPushEnabled } from '@/lib/wallet-push-flag'
 import { PASS_TYPE_IDENTIFIER } from '@/lib/apple-pass-builder'
 import { parseSerialNumber } from '@/lib/wallet-serial'
+import { walletChangeTime } from '@/lib/wallet-change-time'
 
 export const runtime = 'nodejs'
 
@@ -21,9 +22,10 @@ type Params = {
  * asking "which of *my own* registered passes changed", scoped by
  * deviceLibraryIdentifier alone.
  *
- * "Updated" is read off members.last_visit, which QrScanner.tsx already
- * bumps on every stamp (see supabase/migrations/006_wallet_push_tokens.sql)
- * — no separate version/tag column was added for this.
+ * "Updated" is the later of members.last_visit (bumped on every stamp) and
+ * members.wallet_message_at (bumped when a message is sent, migration 011) —
+ * see lib/wallet-change-time.ts. A message never touches last_visit, which
+ * the analytics read as a real visit.
  */
 export async function GET(req: NextRequest, { params }: Params) {
   if (!isWalletPushEnabled()) return new NextResponse(null, { status: 204 })
@@ -61,9 +63,12 @@ export async function GET(req: NextRequest, { params }: Params) {
   let lastUpdated = passesUpdatedSince ?? new Date(0).toISOString()
 
   for (const [businessId, memberIds] of byBusiness) {
+    // `*` rather than naming wallet_message_at: until migration 011 is run
+    // that column doesn't exist, and naming it would fail this query and
+    // silently stop every pass from updating.
     const { data: members, error: membersError } = await supabase
       .from('members')
-      .select('id, last_visit')
+      .select('*')
       .eq('business_id', businessId)
       .in('id', memberIds)
 
@@ -73,11 +78,12 @@ export async function GET(req: NextRequest, { params }: Params) {
     }
 
     for (const member of members ?? []) {
-      if (!member.last_visit) continue
-      if (passesUpdatedSince && member.last_visit <= passesUpdatedSince) continue
+      const changedAt = walletChangeTime(member)
+      if (!changedAt) continue
+      if (passesUpdatedSince && changedAt <= passesUpdatedSince) continue
 
       updatedSerials.push(`${businessId}.${member.id}`)
-      if (member.last_visit > lastUpdated) lastUpdated = member.last_visit
+      if (changedAt > lastUpdated) lastUpdated = changedAt
     }
   }
 
