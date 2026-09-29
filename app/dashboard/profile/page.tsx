@@ -20,7 +20,9 @@ export default async function ProfilePage() {
 
   if (!business) redirect('/login')
 
-  const joinUrl = `https://taply.ge/join/${business.id}`
+  // www, not the apex: taply.ge 308s to www.taply.ge, so every scan of an
+  // apex QR would take an extra hop.
+  const joinUrl = `https://www.taply.ge/join/${business.id}`
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">

@@ -5,6 +5,12 @@ import { isStampIcon } from '@/lib/stamp-icons'
 import { selectBusinessWithTheme } from '@/lib/business-select'
 import JoinForm from './JoinForm'
 
+// The business lookup runs per request, so this response must never be
+// reused: a URL that 404s once (and gets cached by the browser) must still
+// work once the business resolves. Do not make this page cacheable again —
+// proxy.ts also sends no-store here, because notFound() can't set headers.
+export const dynamic = 'force-dynamic'
+
 export default async function JoinPage({
   params,
 }: {

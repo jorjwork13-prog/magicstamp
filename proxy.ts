@@ -34,6 +34,14 @@ export default async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
+  // A browser that caches a /join/{businessId} 404 keeps showing it even
+  // after the business resolves. Server Components and notFound() can't set
+  // response headers, so this is the only place to forbid caching. /join/demo
+  // is a static page with no lookup and stays cacheable.
+  if (/^\/join\/[^/]+\/?$/.test(path) && !/^\/join\/demo\/?$/.test(path)) {
+    response.headers.set('Cache-Control', 'no-store, must-revalidate')
+  }
+
   return response
 }
 
